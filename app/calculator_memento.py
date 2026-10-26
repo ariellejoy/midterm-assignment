@@ -8,7 +8,6 @@ from typing import Any, Dict, List
 
 from app.calculation import Calculation
 
-
 @dataclass
 class CalculatorMemento:
     """
