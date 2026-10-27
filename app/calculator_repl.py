@@ -9,7 +9,7 @@ from app.calculator import Calculator
 from app.exceptions import OperationError, ValidationError
 from app.history import AutoSaveObserver, LoggingObserver
 from app.operations import OperationFactory
-
+from app.logger import Logger
 
 def calculator_repl():
     """
@@ -22,8 +22,11 @@ def calculator_repl():
         # Initialize the Calculator instance
         calc = Calculator()
 
+        # initializing logger
+        logger = Logger()
+
         # Register observers for logging and auto-saving history
-        calc.add_observer(LoggingObserver())
+        calc.add_observer(LoggingObserver(logger))
         calc.add_observer(AutoSaveObserver(calc))
 
         print("Calculator started. Type 'help' for commands.")

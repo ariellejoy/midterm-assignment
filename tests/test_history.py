@@ -4,6 +4,7 @@ from app.calculation import Calculation
 from app.history import LoggingObserver, AutoSaveObserver
 from app.calculator import Calculator
 from app.calculator_config import CalculatorConfig
+from app.logger import Logger
 
 # Sample setup for mock calculation
 calculation_mock = Mock(spec=Calculation)
@@ -16,14 +17,19 @@ calculation_mock.result = 8
 
 @patch('logging.info')
 def test_logging_observer_logs_calculation(logging_info_mock):
-    observer = LoggingObserver()
+    logger = Mock(spec=Logger)
+    observer = LoggingObserver(logger)
     observer.update(calculation_mock)
-    logging_info_mock.assert_called_once_with(
-        "Calculation performed: addition (5, 3) = 8"
+    logger.log_calculation.assert_called_once_with(
+        calculation_mock.operation,
+        calculation_mock.operand1,
+        calculation_mock.operand2,
+        calculation_mock.result
     )
 
 def test_logging_observer_no_calculation():
-    observer = LoggingObserver()
+    logger = Mock(spec=Logger)
+    observer = LoggingObserver(logger)
     with pytest.raises(AttributeError):
         observer.update(None)  # Passing None should raise an exception as there's no calculation
 

@@ -10,9 +10,11 @@ class Logger:
 
     def __init__(self) -> None:
         """Configure the calculator's file logger."""
-        log_file = Path(config.CALCULATOR_LOG_FILE)
+        log_dir = Path(config.CALCULATOR_LOG_DIR)
+        log_dir.mkdir(parents=True, exist_ok=True)
+        log_file = log_dir / "calculator.log"
         # Create the parent directory if it does not exist.
-        log_file.parent.mkdir(parents=True, exist_ok=True)
+        #log_file.parent.mkdir(parents=True, exist_ok=True)
 
         self.logger = logging.getLogger("calculator")
         self.logger.setLevel(logging.INFO)

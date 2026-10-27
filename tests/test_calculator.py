@@ -17,6 +17,7 @@ from app.calculator_config import CalculatorConfig
 from app.exceptions import OperationError, ValidationError
 from app.history import LoggingObserver, AutoSaveObserver
 from app.operations import OperationFactory, Operations
+from app.logger import Logger
 
 # Fixture to initialize Calculator with a temporary directory for file paths
 @pytest.fixture
@@ -64,12 +65,14 @@ def test_logging_setup(logging_info_mock):
 # Test Adding and Removing Observers
 
 def test_add_observer(calculator_instance):
-    observer = LoggingObserver()
+    logger = Mock(spec=Logger)
+    observer = LoggingObserver(logger)
     calculator_instance.add_observer(observer)
     assert observer in calculator_instance.observers
 
 def test_remove_observer(calculator_instance):
-    observer = LoggingObserver()
+    logger = Mock(spec=Logger)
+    observer = LoggingObserver(logger)
     calculator_instance.add_observer(observer)
     calculator_instance.remove_observer(observer)
     assert observer not in calculator_instance.observers
@@ -99,7 +102,7 @@ def test_perform_operation_operation_error(calculator_instance: Calculator):
         calculator_instance.perform_operation(2, 3)
 
 def test_incorrect_command(monkeypatch, capsys):
-        inputs = iter(["add", "2", "3", "cancel", "exit"])
+        inputs = iter(["add 2 3", "cancel", "exit"])
         monkeypatch.setattr("builtins.input", lambda _: next(inputs))
         calculator_repl()
         captured = capsys.readouterr()
@@ -351,10 +354,21 @@ def test_display_help(capsys):
     - subtract (note: this subtracts the second number from the first)
     - multiply
     - divide (note: this divides the first number by the second)
+    - power
+    - root
+    - modulus
+    - int_divide (aka integer division)
+    - percentage
+    - abs_diff (aka absolute difference)
 
     Some special commands that could be helpful: 
     - help : Displays this help message
     - history : Shows your history of calculations 
+    - clear : Clears your history of calculations
+    - save : Saves your history of calculations to a CSV file
+    - load : Loads your history of calculations from a CSV file
+    - undo : Undoes the last operation
+    - redo : Redoes the last undone operation
     - exit : Exits the calculator 
 
     Example operations: 
@@ -362,6 +376,12 @@ def test_display_help(capsys):
     subtract 5 3
     multiply 2 4
     divide 10 2
+    power 2 3
+    root 16 2
+    modulus 10 3
+    int_divide 10 3
+    percentage 50 20
+    abs_diff 5 10
     """
     assert captured.out.strip() == expected_output.strip()
 
