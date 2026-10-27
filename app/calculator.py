@@ -483,6 +483,7 @@ def calculator():
             command = user_input.lower() #this will handle special commands
 
             if command == "help":
+                print(Fore.WHITE + Back.MAGENTA + Style.BRIGHT + "Displaying help message..." + Style.RESET_ALL)
                 display_help()
                 continue #pragma: no cover
             elif command == "history":
