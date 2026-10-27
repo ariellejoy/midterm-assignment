@@ -443,10 +443,13 @@ def display_history (history: List[Calculation]) -> None:
 # A function is just a block of code that does something when you call it, kind of like a recipe that tells the 
 # computer what to do.
 def calculator():
-    """REPL calculator that performs addition, subtraction, multiplication, and division. This calculator now uses Calculation classes"""
+    """REPL calculator that performs several different operations. This calculator uses Calculation classes"""
     
+    #creating instance of Calculator class to use in the REPL calculator
+    calculator_instance = Calculator()
+
     #initializing list to keep track of history
-    history: List[Calculation] = []
+    history = calculator_instance.history
 
     # First, we print a message to welcome the user to the calculator.
     print("Welcome to the calculator REPL! Type 'help' for more instructions or 'exit' to quit")
@@ -468,10 +471,39 @@ def calculator():
                 display_help()
                 continue #pragma: no cover
             elif command == "history":
-                display_history(history)
+                display_history(calculator_instance.history)
                 continue #pragma: no cover
-            # This part checks if the user typed "exit". If they did, we print a message and stop the calculator.
-            #if user_input.lower() == "exit":
+            elif command == "redo":
+                if calculator_instance.redo():
+                    print("Redo operation performed.")
+                else:
+                    print("Nothing to redo.")
+                continue #pragma: no cover
+            elif command == "undo":
+                if calculator_instance.undo():
+                    print("Undo operation performed.")
+                else:
+                    print("Nothing to undo.")
+                continue #pragma: no cover
+            elif command == "clear":   
+                calculator_instance.clear_history()
+                print("History cleared.")
+                continue #pragma: no cover
+            elif command == "save":
+                try:
+                    calculator_instance.save_history()
+                    print("History saved.")
+                except OperationException as e:
+                    print(f"Unable to save history: {e}")
+                continue #pragma: no cover
+            elif command == "load":
+                try:
+                    calculator_instance.load_history()
+                    history = calculator_instance.history  # Update the local history reference
+                    print("History loaded.")
+                except OperationException as e:
+                    print(f"Unable to load history: {e}")
+                continue #pragma: no cover
             elif command == "exit":
                 print("Exiting calculator now... Thank you!")
                 sys.exit(0)
