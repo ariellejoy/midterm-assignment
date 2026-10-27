@@ -414,10 +414,21 @@ def display_help() -> None:
     - subtract (note: this subtracts the second number from the first)
     - multiply
     - divide (note: this divides the first number by the second)
+    - power
+    - root
+    - modulus
+    - int_divide (aka integer division)
+    - percentage
+    - abs_diff (aka absolute difference)
 
     Some special commands that could be helpful: 
     - help : Displays this help message
     - history : Shows your history of calculations 
+    - clear : Clears your history of calculations
+    - save : Saves your history of calculations to a CSV file
+    - load : Loads your history of calculations from a CSV file
+    - undo : Undoes the last operation
+    - redo : Redoes the last undone operation
     - exit : Exits the calculator 
 
     Example operations: 
@@ -425,6 +436,12 @@ def display_help() -> None:
     subtract 5 3
     multiply 2 4
     divide 10 2
+    power 2 3
+    root 16 2
+    modulus 10 3
+    int_divide 10 3
+    percentage 50 20
+    abs_diff 5 10
     """
     print(help_message)
 
