@@ -1,8 +1,39 @@
-This repo utilises the Module 5 assignment as the blueprint for the REPL calculator set up. 
+# Project Description 
+This project is an advanced REPL calculator meant to satisfy the requirements of the midterm assignment. As part of the calculator, an end user can put in one of the available operations and 2 numerical values to get the appropriate result in the terminal. 
 
+# Project Set up
+## Setting up your virtual environment
+In order to set up your virtual environment, follow the below steps: 
+1. Ensure that the project folder has been cloned to your local environment using SSH 
+2. Open said project folder in VSCODE using:
+```
+code . 
+```
+3. Once in VSCode, open a new terminal to run the following command in order to create the virtual environment: 
+FOR MAC (what I used)-
+```
+python3 -m venv .venv
+```
+FOR WINDOWS-
+```
+python -m venv .venv 
+```
+4. After it has been created, you can start your virtual environment by running the following: 
+FOR MAC (what I used)- 
+```
+source venv/bin/activate
+```
+FOR WINDOWS-
+``` 
+venv\Scripts\activate.bat 
+```
+5. To know that the virtual environment has been started, you should see "(venv)" at the start of your terminal prompt line
 
-
-# 📦 Project Setup
+## Installing packages for the project
+To ensure that the required dependencies are installed, run the following command: 
+```
+pip install -r requirements.txt
+```
 
 ---
 
@@ -157,48 +188,8 @@ or
 python --version
 ```
 
----
 
-## Create and Activate a Virtual Environment
 
-(Optional but recommended)
-
-```bash
-python3 -m venv venv
-source venv/bin/activate   # Mac/Linux
-venv\Scripts\activate.bat  # Windows
-```
-
-### Install Required Packages
-
-```bash
-pip install -r requirements.txt
-```
-
----
-
-# 🐳 5. (Optional) Docker Setup
-
-> Skip if Docker isn't used in this module.
-
-## Install Docker
-
-- [Install Docker Desktop for Mac](https://www.docker.com/products/docker-desktop/)
-- [Install Docker Desktop for Windows](https://www.docker.com/products/docker-desktop/)
-
-## Build Docker Image
-
-```bash
-docker build -t <image-name> .
-```
-
-## Run Docker Container
-
-```bash
-docker run -it --rm <image-name>
-```
-
----
 
 # 🚀 6. Running the Project
 
