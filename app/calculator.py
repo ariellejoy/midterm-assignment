@@ -508,7 +508,7 @@ def calculator():
                 try:
                     calculator_instance.save_history()
                     print(Fore.GREEN + "History saved." + Style.RESET_ALL)
-                except OperationException as e:
+                except OperationError as e:
                     print(Fore.RED + f"Unable to save history: {e}" + Style.RESET_ALL)
                 continue #pragma: no cover
             elif command == "load":
@@ -516,7 +516,7 @@ def calculator():
                     calculator_instance.load_history()
                     history = calculator_instance.history  # Update the local history reference
                     print(Fore.GREEN + "History loaded." + Style.RESET_ALL)
-                except OperationException as e:
+                except OperationError as e:
                     print(Fore.RED + f"Unable to load history: {e}" + Style.RESET_ALL)
                 continue #pragma: no cover
             elif command == "exit":

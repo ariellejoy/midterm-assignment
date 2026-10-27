@@ -6,7 +6,7 @@ from decimal import Decimal
 import logging
 from colorama import Fore, Back, Style 
 
-from app.calculator import Calculator
+from app.calculator import Calculator, calculator, display_help, display_history
 from app.exceptions import OperationError, ValidationError
 from app.history import AutoSaveObserver, LoggingObserver
 from app.operations import OperationFactory
