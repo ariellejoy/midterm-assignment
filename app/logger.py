@@ -11,7 +11,6 @@ class Logger:
     def __init__(self) -> None:
         """Configure the calculator's file logger."""
         log_file = Path(config.CALCULATOR_LOG_FILE)
-
         # Create the parent directory if it does not exist.
         log_file.parent.mkdir(parents=True, exist_ok=True)
 
@@ -35,7 +34,7 @@ class Logger:
             self.logger.addHandler(file_handler)
 
     def info(self, message: str) -> None:
-        """Log an informational event."""
+        """Log an informational event/important app event."""
         self.logger.info(message)
 
     def warning(self, message: str) -> None:
@@ -43,7 +42,7 @@ class Logger:
         self.logger.warning(message)
 
     def error(self, message: str) -> None:
-        """Log an error."""
+        """Log an errors and/or failed operations."""
         self.logger.error(message)
 
     def log_calculation(
