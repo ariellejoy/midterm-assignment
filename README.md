@@ -1,10 +1,6 @@
-This repo was updated to fulfill the Module 5 assignment. 
-Please note that certain files were copied over from the previous module's assignment to ensure continuity and were not updated as part of the current assignment/objectives (EX: main.py)
+This repo utilises the Module 5 assignment as the blueprint for the REPL calculator set up. 
 
-REMINDER: in order to use the REPL app: 
-1. use the following command: python main.py or python3 main.py
-2. enter the necessary inputs to use the calculator 
-3. to exit, enter "exit" 
+
 
 # 📦 Project Setup
 
