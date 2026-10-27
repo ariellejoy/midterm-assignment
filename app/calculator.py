@@ -439,9 +439,6 @@ def display_history (history: List[Calculation]) -> None:
         for idx, calculation in enumerate(history, start=1):
             print(f"{idx}. {calculation}")
 
-# Now we're going to create the main function called "calculator". 
-# A function is just a block of code that does something when you call it, kind of like a recipe that tells the 
-# computer what to do.
 def calculator():
     """REPL calculator that performs several different operations. This calculator uses Calculation classes"""
     
@@ -537,8 +534,12 @@ def calculator():
 
             try: 
                 calculation = Calculation(operation, num1, num2)
-            except ValueError as ve: #pragma: no cover
-                print(ve)
+                result = calculation.result
+            except OperationError as e:
+                print (f"Calculation error: {e}")
+                continue #pragma: no cover
+            except (ValueError, ArithmeticError) as e: #pragma: no cover
+                print (f"Calculation failed: {e}")
                 print("Type 'help' for more instructions and the list of supported operations!")
                 continue  # This "continue" means: try again by going back to the top of the loop.
 
@@ -549,12 +550,11 @@ def calculator():
             except ZeroDivisionError: #pragma: no cover
                 print("Error: Division by zero is not allowed.")
                 print("Please try again!")
-                continue  # This "continue" means: try again by going back to the top of the loop.  
-            #except Exception as e:
+                continue #pragma: no cover
             except Exception as e: #pragma: no cover
                 print(f"An error has occurred during calculation: {e}")
                 print("Please try again!")
-                continue  # This "continue" means: try again by going back to the top of the loop.
+                continue  #pragme: no cover
 
              # Finally, we print the result of the operation (for example, "Result: 8").
             result_str: str = f"{calculation}"
