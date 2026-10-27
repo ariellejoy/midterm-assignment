@@ -3,9 +3,9 @@
 ########################
 
 from abc import ABC, abstractmethod
-import logging
 from typing import Any
 from app.calculation import Calculation
+from app.logger import Logger
 
 
 class HistoryObserver(ABC):
@@ -30,11 +30,14 @@ class HistoryObserver(ABC):
 
 class LoggingObserver(HistoryObserver):
     """
-    Observer that logs calculations to a file.
+    Observer that logs completed calculations to a file.
 
     Implements the Observer pattern by listening for new calculations and logging
     their details to a log file.
     """
+
+    def __init__(self, logger: Logger) -> None:
+        self.logger = logger
 
     def update(self, calculation: Calculation) -> None:
         """
@@ -47,11 +50,14 @@ class LoggingObserver(HistoryObserver):
             calculation (Calculation): The calculation that was performed.
         """
         if calculation is None:
+            self.logger.warning("Received an empty calculation.")
             raise AttributeError("Calculation cannot be None")
-        logging.info(
-            f"Calculation performed: {calculation.operation} "
-            f"({calculation.operand1}, {calculation.operand2}) = "
-            f"{calculation.result}"
+        
+        self.logger.log_calculation(
+            calculation.operation,
+            calculation.operand1,
+            calculation.operand2,
+            calculation.result
         )
 
 
@@ -64,7 +70,7 @@ class AutoSaveObserver(HistoryObserver):
     feature is enabled in the configuration.
     """
 
-    def __init__(self, calculator: Any):
+    def __init__(self, calculator: Any) -> None:
         """
         Initialize the AutoSaveObserver.
 
