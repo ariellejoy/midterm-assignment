@@ -4,6 +4,7 @@ import sys
 from io import StringIO
 # from app.calculator import display_help, display_history, calculator
 
+import re
 import datetime
 from pathlib import Path
 import pandas as pd
@@ -390,7 +391,9 @@ def test_display_history_empty(capsys):
     history = []
     display_history(history)
     captured = capsys.readouterr()
-    assert captured.out.strip() == "No calculations have been performed yet."
+    output = re.sub(r'\x1b\[[0-9;]*m', '', captured.out)
+
+    assert output.strip() == "No calculations have been performed yet."
 
 def test_display_history(capsys):
     """Test to ensure that the correct calculation history is displayed."""
@@ -400,13 +403,14 @@ def test_display_history(capsys):
                 "division: 10.0 divide 2.0 = 5.0"]
     display_history(history)
     captured = capsys.readouterr()
+    output = re.sub(r'\x1b\[[0-9;]*m', '', captured.out)  # Remove ANSI escape sequences for color
     expected_output = """Calculation History:
 1. addition: 1.0 add 1.0 = 2.0
 2. subtraction: 5.0 subtract 2.0 = 3.0
 3. multiplication: 2.0 multiply 4.0 = 8.0
 4. division: 10.0 divide 2.0 = 5.0
     """
-    assert captured.out.strip() == expected_output.strip()
+    assert output.strip() == expected_output.strip()
 
 def test_validation_error(monkeypatch, capsys):
     def mock_perform_operation(self, a, b):

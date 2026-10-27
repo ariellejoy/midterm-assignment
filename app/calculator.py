@@ -9,6 +9,7 @@ import logging
 import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
+from colorama import Fore, Back, Style
 
 import pandas as pd
 
@@ -229,12 +230,12 @@ class Calculator:
 
         except ValidationError as e:
             # Log and re-raise validation errors
-            logging.error(f"Validation error: {str(e)}")
+            logging.error(Fore.RED + f"Validation error: {str(e)}")
             raise
         except Exception as e:
             # Log and raise operation errors for any other exceptions
-            logging.error(f"Operation failed: {str(e)}")
-            raise OperationError(f"Operation failed: {str(e)}") #pragma: no cover
+            logging.error(Fore.RED + f"Operation failed: {str(e)}")
+            raise OperationError(Fore.RED + f"Operation failed: {str(e)}") #pragma: no cover
 
     def save_history(self) -> None:
         """
@@ -450,9 +451,9 @@ def display_history (history: List[Calculation]) -> None:
     """Display history of calculations preformed during the session (read: python3 main.py is running and REPL app is open)"""
 
     if not history: 
-        print("No calculations have been performed yet.")
+        print(Fore.YELLOW + "No calculations have been performed yet." + Style.RESET_ALL)
     else: 
-        print ("Calculation History:")
+        print (Fore.GREEN + Back.WHITE +"Calculation History:" + Style.RESET_ALL)
         for idx, calculation in enumerate(history, start=1):
             print(f"{idx}. {calculation}")
 
@@ -466,7 +467,7 @@ def calculator():
     history = calculator_instance.history
 
     # First, we print a message to welcome the user to the calculator.
-    print("Welcome to the calculator REPL! Type 'help' for more instructions or 'exit' to quit")
+    print(Fore.RED + Back.WHITE + Style.BRIGHT + "Welcome to the calculator REPL! Type 'help' for more instructions or 'exit' to quit" + Style.RESET_ALL)
     
     # This is the part where the calculator keeps running. The 'while True' means we are going to keep 
     # doing something (in this case, asking the user for input) until we tell it to stop.
@@ -489,37 +490,37 @@ def calculator():
                 continue #pragma: no cover
             elif command == "redo":
                 if calculator_instance.redo():
-                    print("Redo operation performed.")
+                    print(Fore.YELLOW + "Redo operation performed." + Style.RESET_ALL)
                 else:
-                    print("Nothing to redo.")
+                    print(Fore.RED + "Nothing to redo." + Style.RESET_ALL)
                 continue #pragma: no cover
             elif command == "undo":
                 if calculator_instance.undo():
-                    print("Undo operation performed.")
+                    print(Fore.YELLOW + "Undo operation performed." + Style.RESET_ALL)
                 else:
-                    print("Nothing to undo.")
+                    print(Fore.RED + "Nothing to undo." + Style.RESET_ALL)
                 continue #pragma: no cover
             elif command == "clear":   
                 calculator_instance.clear_history()
-                print("History cleared.")
+                print(Fore.GREEN + "History cleared." + Style.RESET_ALL)
                 continue #pragma: no cover
             elif command == "save":
                 try:
                     calculator_instance.save_history()
-                    print("History saved.")
+                    print(Fore.GREEN + "History saved." + Style.RESET_ALL)
                 except OperationException as e:
-                    print(f"Unable to save history: {e}")
+                    print(Fore.RED + f"Unable to save history: {e}" + Style.RESET_ALL)
                 continue #pragma: no cover
             elif command == "load":
                 try:
                     calculator_instance.load_history()
                     history = calculator_instance.history  # Update the local history reference
-                    print("History loaded.")
+                    print(Fore.GREEN + "History loaded." + Style.RESET_ALL)
                 except OperationException as e:
-                    print(f"Unable to load history: {e}")
+                    print(Fore.RED + f"Unable to load history: {e}" + Style.RESET_ALL)
                 continue #pragma: no cover
             elif command == "exit":
-                print("Exiting calculator now... Thank you!")
+                print(Fore.RED + Back.WHITE + Style.BRIGHT + "Exiting calculator now... Thank you!" + Style.RESET_ALL)
                 sys.exit(0)
 
             try: 
@@ -545,50 +546,47 @@ def calculator():
                 num2 = Decimal(num2_str)
             except ValueError: #pragma: no cover
             # If the user doesn't type something correctly, like typing letters where numbers should be, we show an error.
-                print("Invalid input. Please follow the format: <operation> <num1> <num2>")
-                print("Type 'help' for more instructions!")
-                continue  # This "continue" means: try again by going back to the top of the loop.
-
-            try: 
-                calculation = Calculation(operation, num1, num2)
+                print(Fore.BLUE + "Invalid input. Please follow the format: <operation> <num1> <num2>")
+                print(Fore.BLUE + "Type 'help' for more instructions!" + Style.RESET_ALL)
+                continue  #pragma: no cover
                 result = calculation.result
             except OperationError as e:
-                print (f"Calculation error: {e}")
+                print (Fore.RED + f"Calculation error: {e}" + Style.RESET_ALL)
                 continue #pragma: no cover
             except (ValueError, ArithmeticError) as e: #pragma: no cover
-                print (f"Calculation failed: {e}")
-                print("Type 'help' for more instructions and the list of supported operations!")
-                continue  # This "continue" means: try again by going back to the top of the loop.
+                print (Fore.RED + f"Calculation failed: {e}" + Style.RESET_ALL)
+                print(Fore.BLUE + "Type 'help' for more instructions and the list of supported operations!" + Style.RESET_ALL)
+                continue  #pragma: no cover
 
             # Now we check what operation the user asked for and call the right function (addition, subtraction, etc.).
             try: 
                 calculation = Calculation(operation, num1, num2)
                 result = calculation.result
             except ZeroDivisionError: #pragma: no cover
-                print("Error: Division by zero is not allowed.")
-                print("Please try again!")
+                print(Fore.RED + "Error: Division by zero is not allowed." + Style.RESET_ALL)
+                print(Fore.RED + "Please try again!" + Style.RESET_ALL)
                 continue #pragma: no cover
             except Exception as e: #pragma: no cover
-                print(f"An error has occurred during calculation: {e}")
-                print("Please try again!")
-                continue  #pragme: no cover
+                print(Fore.RED + f"An error has occurred during calculation: {e}" + Style.RESET_ALL)
+                print(Fore.RED + "Please try again!" + Style.RESET_ALL)
+                continue  #pragma: no cover
 
              # Finally, we print the result of the operation (for example, "Result: 8").
             result_str: str = f"{calculation}"
-            print(f"Result: {result_str}")
+            print(Fore.GREEN + f"Result: {result_str}" + Style.RESET_ALL)
             history.append(calculation)
         
         except KeyboardInterrupt: #pragma: no cover
             # EAFP example for handling unexpected interruption
             # Instead of checking if the user pressed Ctrl+C before each input,
             # we handle the KeyboardInterrupt exception.
-            print("\nKeyboard interrupt detected. Exiting calculator. Goodbye!")
+            print(Fore.RED + "\nKeyboard interrupt detected. Exiting calculator. Goodbye!" + Style.RESET_ALL)
             sys.exit(0)
 
         except EOFError: #pragma: no cover
             # EAFP example for handling EOF (Ctrl+D)
             # Similar to KeyboardInterrupt, we handle the EOFError exception.
-            print("\nEOF detected. Exiting calculator. Goodbye!")
+            print(Fore.RED + "\nEOF detected. Exiting calculator. Goodbye!" + Style.RESET_ALL)
             sys.exit(0)
 
 if __name__ == "__main__":
