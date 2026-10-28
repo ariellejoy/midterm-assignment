@@ -134,8 +134,9 @@ cd <repository-directory>
 brew install python
 ```
 **FOR WINDOWS**
+
 Download and install [Python for Windows](https://www.python.org/downloads/).  
-✅ Make sure you **check the box** `Add Python to PATH` during setup.
+Make sure you **check the box** `Add Python to PATH` during setup.
 
 **Verify Python**
 ```bash
