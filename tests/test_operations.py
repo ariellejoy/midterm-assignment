@@ -298,7 +298,7 @@ class TestOperationFactory:
     def test_register_invalid_operation(self):
         """Test registering an invalid operation class raises error."""
         class InvalidOperation:
-            pass
+            pass #pragma: no cover
 
         with pytest.raises(TypeError, match="Operation class must inherit"):
             OperationFactory.register_operation("invalid", InvalidOperation)
