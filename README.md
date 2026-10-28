@@ -183,9 +183,27 @@ Since we are not using Docker, use the following command to run the REPL interfa
 ```bash
 python main.py
 ```
-
 # Configuration Setup 
+Configuration setup included adding a env file in the project directory to store the environment variables required for the project's run. For this project, this included: 
+- base directories
+- history settings
+and 
+- calculation settings
+
+This is included in the .gitignore to prevent them from being commited for version control.
 
 # Testing Instructions 
+In order to run tests, a user will need to ensure that you are running the project in a virtual environment and all requirements + dependencies have been added per the above instructions.
+
+To run the unit tests, enter the following in the terminal: 
+```
+pytest
+```
+This command will run your test files, which will return a complete output with successful tests, as well as any errors/failures that come up. Traceback calls are also helpful to determine how to fix these errors and failed tests. 
+
+A user can check test coverage through the pytest output! A table will be displayed that shows the overall coverage and what lines do not have any tests covering them. You can better view the code by opening the **index.html** file from the htmlcov folder in the browser. **For this project, the required test coverage is 90%**
 
 # CI/CD Info
+GitHub Actions (from now on refered to as GA) is the native CI/CD platform built within GitHub. GA's purpose is to automate workflows and streamline tests where the codebase is stored. GA is dictated by the **.yml** file that lives within the .github folder, which describes specific tasks that need to be executed as part of the workflows.
+
+A user can also see how GA evolves as the code is updated overtime. 
