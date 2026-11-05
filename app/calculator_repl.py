@@ -61,7 +61,6 @@ def calculator_repl():
                     break
 
                 if command == 'history':
-                    # Display calculation history
                     history = calc.show_history()
                     if not history:
                         print("No calculations in history")
@@ -69,7 +68,7 @@ def calculator_repl():
                         print("\nCalculation History:")
                         for i, entry in enumerate(history, 1):
                             print(f"{i}. {entry}")
-                    continue #pragma: no cover
+                    continue
 
                 if command == 'clear':
                     # Clear calculation history

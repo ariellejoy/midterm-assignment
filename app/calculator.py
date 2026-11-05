@@ -279,42 +279,47 @@ class Calculator:
             logging.error(f"Failed to save history: {e}")
             raise OperationError(f"Failed to save history: {e}") #pragma: no cover
 
-    def load_history(self) -> None:
-        """
-        Load calculation history from a CSV file using pandas.
+    
+def load_history(self) -> None:
+    """
+    Load calculation history from a CSV file.
 
-        Reads the calculation history from a CSV file and reconstructs the
-        Calculation instances, restoring the calculator's history.
-
-        Raises:
-            OperationError: If loading the history fails.
-        """
-        try:
-            if self.config.history_file.exists():
-                # Read the CSV file into a pandas DataFrame
-                df = pd.read_csv(self.config.history_file)
-                if not df.empty:
-                    # Deserialize each row into a Calculation instance
-                    self.history = [
-                        Calculation.from_dict({
-                            'operation': row['operation'],
-                            'operand1': row['operand1'],
-                            'operand2': row['operand2'],
-                            'result': row['result'],
-                            'timestamp': row['timestamp']
-                        })
-                        for _, row in df.iterrows()
-                    ]
-                    logging.info(f"Loaded {len(self.history)} calculations from history")
-                else:
-                    logging.info("Loaded empty history file")
+    Replaces the current history and resets undo/redo stacks
+    to prevent outdated snapshots from being restored.
+    """
+    try:
+        if self.config.history_file.exists():
+            df = pd.read_csv(self.config.history_file)
+            if not df.empty:
+                loaded_history = [
+                    Calculation.from_dict({
+                        'operation': row['operation'],
+                        'operand1': row['operand1'],
+                        'operand2': row['operand2'],
+                        'result': row['result'],
+                        'timestamp': row['timestamp']
+                    })
+                    for _, row in df.iterrows()
+                ]
             else:
-                # If no history file exists, start with an empty history
-                logging.info("No history file found - starting with empty history")
-        except Exception as e:
-            # Log and raise an OperationError if loading fails
-            logging.error(f"Failed to load history: {e}")
-            raise OperationError(f"Failed to load history: {e}") #pragma: no cover
+                loaded_history = []
+        else:
+            logging.info("No history file found")
+            return
+        # Replace current history only after loading succeeds
+        self.history = loaded_history
+        # Clear outdated undo/redo snapshots
+        self.undo_stack.clear()
+        self.redo_stack.clear()
+        # Notify observers if this method is used with registered observers
+        self.notify_history_changed()
+        logging.info(
+            f"Successfully loaded {len(self.history)} calculations"
+        )
+    except Exception as e:
+        logging.error(f"Failed to load history: {e}")
+        raise OperationError(f"Failed to load history: {e}")
+
 
     def get_history_dataframe(self) -> pd.DataFrame:
         """
