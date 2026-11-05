@@ -218,6 +218,8 @@ This command will run your test files, which will return a complete output with 
 
 A user can also check test coverage through the pytest output! A table will be displayed that shows the overall coverage and what lines do not have any tests covering them. You can better view the code by opening the **index.html** file from the htmlcov folder in the browser. **For this project, the required test coverage is 90% (verified by Github Actions)**
 
+Test coverage includes updates to ensure that there are specific test cases that utilize the CLI entry point.
+
 If a user would like to run the tests from a specific test file, they can use something like the following command in the terminal:
 ```
 pytest -v path/to/your_test_file.py 
