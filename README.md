@@ -1,12 +1,21 @@
 # Project Description 
-This project is an advanced REPL (Read-Eval-Print Loop) calculator meant to satisfy the requirements of the midterm assignment. As part of the calculator, an end user can put in one of the available operations (EX: add, mulitply, modulus, absolute difference) and 2 numerical values to get the appropriate result in the terminal interactively. If the user inputs the wrong values or the calculator is unable to run the calculation, then a related error should show within the user interface. Users can also manage their calculation history. 
+This project is an advanced REPL (Read-Eval-Print Loop) calculator meant to satisfy the requirements of the midterm assignment. As part of the calculator, an end user can put in one of the available operations (EX: add, mulitply, modulus, absolute difference) and 2 numerical values to get the appropriate result in the terminal interactively. If the user inputs the wrong values or the calculator is unable to run the calculation, then a related error and/or validation message should show within the user interface. Users can also manage their calculation history through the interface. 
 
 # Usage Guide 
 The calculator supports multiple math operations, history management, undo/redo functionality, saving/loading calculation history, and logging. 
 
 Please follow the below instructions under **Project Setup** to ensure that your system is prepped to run the application. 
 
-Once the application has been started, a welcome message will appear, prompting the end user to interact with the terminal. To perform a calculation, enter the operation followed by 2 numerical values as such: <operation><num1><num2>
+Once the application has been started, a start up message will appear, prompting the end user to interact with the terminal. To perform a calculation, the user will be prompted as follows: 
+1. Enter command - this is where users will input one of the available operations. If unsure what is available, type help for more information!
+2. Enter first number - this is when users input their first value for the operation
+3. Enter second number - this is when users input their second value for the operation 
+
+Pending that the user has entered 3 valid inputs for their command and numerical values, they should see the result of their operation.
+
+The user is also able to use a variety of other commands to view and manipulate their calculation history.
+
+See list of supported operations below.
 
 **Supported Operations include:**
 | operation | function | example |
@@ -40,8 +49,13 @@ As the user interacts with the calculator, they may run into the following messa
 - Unexpected exit 
 
 Some color coding has also been added to the outputs to ensure the user is aware of their state. 
+
 EXAMPLE: successful calculations should always be green
+
+EXAMPLE: cancellations should be yellow
+
 EXAMPLE: error messages should be red
+
 There are other stylings applied to differentiate headings for things such as the help content and history, as well.
 
 # Project Setup
@@ -194,7 +208,7 @@ and
 This is included in the .gitignore to prevent them from being commited for version control.
 
 # Testing Instructions 
-In order to run tests, a user will need to ensure that you are running the project in a virtual environment and all requirements + dependencies have been added per the above instructions.
+In order to run tests, a user will need to ensure that they are running the project in a virtual environment and all requirements + dependencies have been added per the above instructions.
 
 To run the unit tests, enter the following in the terminal: 
 ```
@@ -202,7 +216,19 @@ pytest
 ```
 This command will run your test files, which will return a complete output with successful tests, as well as any errors/failures that come up. Traceback calls are also helpful to determine how to fix these errors and failed tests. 
 
-A user can check test coverage through the pytest output! A table will be displayed that shows the overall coverage and what lines do not have any tests covering them. You can better view the code by opening the **index.html** file from the htmlcov folder in the browser. **For this project, the required test coverage is 90%**
+A user can also check test coverage through the pytest output! A table will be displayed that shows the overall coverage and what lines do not have any tests covering them. You can better view the code by opening the **index.html** file from the htmlcov folder in the browser. **For this project, the required test coverage is 90% (verified by Github Actions**
+
+If a user would like to run the tests from a specific test file, they can use something like the following command in the terminal:
+```
+pytest -v path/to/your_test_file.py 
+``` 
+
+If a user would like to run a specific test case, they can use something like the following command in the terminal: 
+```
+pytest -v path/to/your_test_file.py::specific_test_case
+```
+
+I personally used the above two commands to get a better idea of where my test cases were failing after running into pytest starting to hang in a specific test file.
 
 # CI/CD Info
 GitHub Actions (from now on refered to as GA) is the native CI/CD platform built within GitHub. GA's purpose is to automate workflows and streamline tests where the codebase is stored. GA is dictated by the **.yml** file that lives within the .github folder, which describes specific tasks that need to be executed as part of the workflows.
