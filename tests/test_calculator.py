@@ -4,6 +4,7 @@ import sys
 from io import StringIO
 # from app.calculator import display_help, display_history, calculator
 
+from colorama import Fore, Back, Style
 import re
 import datetime
 from pathlib import Path
@@ -466,24 +467,22 @@ def test_calculator_repl_exit(mock_print, mock_input):
         calc = Calculator()
         calculator_repl(calc)
         mock_save_history.assert_called_once()
-        mock_print.assert_any_call("History saved successfully.")
-        mock_print.assert_any_call("Goodbye!")
+        mock_print.assert_any_call(Fore.GREEN + "History saved successfully." + Style.RESET_ALL)
+        mock_print.assert_any_call(Fore.BLUE + Back.WHITE + Style.BRIGHT + "Goodbye!" + Style.RESET_ALL)
 
 @patch('builtins.input', side_effect=['help', 'exit'])
 @patch('builtins.print')
 def test_calculator_repl_help(mock_print, mock_input):
     calc = Calculator()
     calculator_repl(calc)
-    mock_print.assert_any_call("\nAvailable commands:")
+    mock_print.assert_any_call(Fore.WHITE + Back.MAGENTA + Style.BRIGHT + "\nAvailable commands:" + Style.RESET_ALL)
 
 @patch('builtins.input', side_effect=['add', '2', '3', 'exit'])
 @patch('builtins.print')
 def test_calculator_repl_addition(mock_print, mock_input):
     calc = Calculator()
     calculator_repl(calc)
-    mock_print.assert_any_call("\nResult: 5")
-
-
+    mock_print.assert_any_call(Fore.GREEN + Back.WHITE + Style.BRIGHT + "\nResult: 5" + Style.RESET_ALL)
 
 @patch("app.calculator_repl.Calculator")
 def test_history_command(mock_calculator, capsys):
