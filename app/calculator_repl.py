@@ -11,6 +11,7 @@ from app.exceptions import OperationError, ValidationError
 from app.history import AutoSaveObserver, LoggingObserver
 from app.operations import OperationFactory
 from app.logger import Logger
+from app.input_validators import InputValidator
 
 def calculator_repl():
     """
@@ -112,38 +113,66 @@ def calculator_repl():
                         print(f"Error loading history: {e}")
                     continue #pragma: no cover
                
-                if command in ['add', 'subtract', 'multiply', 'divide', 'power', 'root', 'modulus', 'int_divide', 'percentage', 'abs_diff']: 
-                    # Perform the specified arithmetic operation
+                
+                
+                if command in ['add', 'subtract', 'multiply', 'divide',
+               'power', 'root', 'modulus', 'int_divide',
+               'percentage', 'abs_diff']:
+
                     try:
                         print("\nEnter numbers (or 'cancel' to abort):")
-                        a = input("First number: ")
-                        if a.lower() == 'cancel':
-                            print("Operation cancelled")
-                            continue #pragma: no cover
-                        b = input("Second number: ")
-                        if b.lower() == 'cancel':
-                            print("Operation cancelled")
-                            continue #pragma: no cover
 
-                        # Create the appropriate operation instance using the Factory pattern
+                        # Get and validate the first number
+                        while True:
+                            a = input("First number: ")
+
+                            if a.lower().strip() == 'cancel':
+                                print("Operation cancelled")
+                                break
+
+                            try:
+                                validated_a = InputValidator.validate_number(a, calc.config)
+                                break
+                            except ValidationError as e:
+                                print(f"Invalid first number: {e}")
+                        else:
+                            continue
+
+                        # Get and validate the second number
+                        while True:
+                            b = input("Second number: ")
+
+                            if b.lower().strip() == 'cancel':
+                                print("Operation cancelled")
+                                break
+
+                            try:
+                                validated_b = InputValidator.validate_number(b, calc.config)
+                                break
+                            
+                            except ValidationError as e:
+                                print(f"Invalid second number: {e}")
+                        else:
+                            continue
+                
+
                         operation = OperationFactory.create_operation(command)
                         calc.set_operation(operation)
 
-                        # Perform the calculation
-                        result = calc.perform_operation(a, b)
+                        result = calc.perform_operation(validated_a, validated_b)
 
-                        # Normalize the result if it's a Decimal
                         if isinstance(result, Decimal):
                             result = result.normalize()
 
                         print(f"\nResult: {result}")
+
                     except (ValidationError, OperationError) as e:
-                        # Handle known exceptions related to validation or operation errors
                         print(f"Error: {e}")
+
                     except Exception as e:
-                        # Handle any unexpected exceptions
                         print(f"Unexpected error: {e}")
-                    continue #pragma: no cover
+
+                    continue
 
                 # Handle unknown commands
                 print(f"Unknown command: '{command}'. Type 'help' for available commands.")
