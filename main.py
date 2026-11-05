@@ -6,23 +6,23 @@
 
 import config
 
-from app.calculator import calculator
+from app.calculator import Calculator
 from app.calculator_repl import calculator_repl
 from app.logger import Logger
 from app.history import LoggingObserver, AutoSaveObserver
 
+
 def main():
     logger = Logger()
-    calculator = Calculator(config=config)
+    calc = Calculator()
 
-    logging_observer = LoggingObserver(logger)
-    autosave_observer = AutoSaveObserver(calculator)
-
-    calculator.add_observer(logging_observer)
-    calculator.add_observer(autosave_observer)
+    calc.add_observer(LoggingObserver(logger))
+    calc.add_observer(AutoSaveObserver(calc))
 
     logger.info("Starting the REPL calculator.")
-    calculator.run()
+
+    calculator_repl(calc)
+
 
 if __name__ == "__main__":
-    calculator_repl()
+    main()
