@@ -235,7 +235,7 @@ class Calculator:
         except Exception as e:
             # Log and raise operation errors for any other exceptions
             logging.error(Fore.RED + f"Operation failed: {str(e)}")
-            raise OperationError(Fore.RED + f"Operation failed: {str(e)}") #pragma: no cover
+            raise OperationError(Fore.RED + f"Operation failed: {str(e)}" + Style.RESET_ALL) #pragma: no cover
 
     def save_history(self) -> None:
         """
