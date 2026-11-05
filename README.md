@@ -216,7 +216,7 @@ pytest
 ```
 This command will run your test files, which will return a complete output with successful tests, as well as any errors/failures that come up. Traceback calls are also helpful to determine how to fix these errors and failed tests. 
 
-A user can also check test coverage through the pytest output! A table will be displayed that shows the overall coverage and what lines do not have any tests covering them. You can better view the code by opening the **index.html** file from the htmlcov folder in the browser. **For this project, the required test coverage is 90% (verified by Github Actions**
+A user can also check test coverage through the pytest output! A table will be displayed that shows the overall coverage and what lines do not have any tests covering them. You can better view the code by opening the **index.html** file from the htmlcov folder in the browser. **For this project, the required test coverage is 90% (verified by Github Actions)**
 
 If a user would like to run the tests from a specific test file, they can use something like the following command in the terminal:
 ```
