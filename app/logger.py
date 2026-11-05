@@ -1,30 +1,31 @@
 
 import logging
-from pathlib import Path
-
-import config
+from app.calculator_config import CalculatorConfig
 
 
 class Logger:
     """Centralized logging for the REPL calculator."""
 
-    def __init__(self) -> None:
-        """Configure the calculator's file logger."""
-        log_dir = Path(config.CALCULATOR_LOG_DIR)
-        log_dir.mkdir(parents=True, exist_ok=True)
-        log_file = log_dir / "calculator.log"
-        # Create the parent directory if it does not exist.
-        #log_file.parent.mkdir(parents=True, exist_ok=True)
+    def __init__(self, config: CalculatorConfig) -> None:
+        """Configure the calculator's file logger using CalculatorConfig."""
+
+        self.config = config
+
+        # Ensure the configured log directory exists.
+        self.config.log_dir.mkdir(parents=True, exist_ok=True)
+
+        # Use the configured log file.
+        log_file = self.config.log_file
 
         self.logger = logging.getLogger("calculator")
         self.logger.setLevel(logging.INFO)
         self.logger.propagate = False
 
-        # Avoid adding duplicate handlers if initialized more than once.
+        # Avoid duplicate handlers.
         if not self.logger.handlers:
             file_handler = logging.FileHandler(
                 log_file,
-                encoding="utf-8"
+                encoding=self.config.default_encoding
             )
 
             formatter = logging.Formatter(
@@ -36,15 +37,12 @@ class Logger:
             self.logger.addHandler(file_handler)
 
     def info(self, message: str) -> None:
-        """Log an informational event/important app event."""
         self.logger.info(message)
 
     def warning(self, message: str) -> None:
-        """Log a warning."""
         self.logger.warning(message)
 
     def error(self, message: str) -> None:
-        """Log an errors and/or failed operations."""
         self.logger.error(message)
 
     def log_calculation(
@@ -54,7 +52,6 @@ class Logger:
         b: object,
         result: object
     ) -> None:
-        """Log a successful calculation."""
         self.logger.info(
             "Calculation: %s | operands=(%s, %s) | result=%s",
             operation,
@@ -64,5 +61,4 @@ class Logger:
         )
 
     def log_exception(self, message: str) -> None:
-        """Log an exception with its traceback."""
         self.logger.exception(message)
