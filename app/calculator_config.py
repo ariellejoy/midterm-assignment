@@ -73,9 +73,11 @@ class CalculatorConfig:
         ).resolve()
 
         # Maximum history size
-        self.max_history_size = max_history_size or int(
-            os.getenv('CALCULATOR_MAX_HISTORY_SIZE', '1000')
-        )
+        self.max_history_size = (
+            max_history_size
+            if max_history_size is not None
+            else int(os.getenv('CALCULATOR_MAX_HISTORY_SIZE', '1000'))
+)
 
         # Auto-save preference
         auto_save_env = os.getenv('CALCULATOR_AUTO_SAVE', 'true').lower()
