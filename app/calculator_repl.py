@@ -97,18 +97,21 @@ def calculator_repl():
                     try:
                         calc.save_history()
                         print("History saved successfully")
-                    except Exception as e:
+                    except OperationError as e:
                         print(f"Error saving history: {e}")
                     continue #pragma: no cover
 
                 if command == 'load':
                     # Load calculation history from file
                     try:
-                        calc.load_history()
-                        print("History loaded successfully")
-                    except Exception as e:
+                        if calc.load_history():
+                            print("History loaded successfully")
+                        else:
+                            print("No saved history file found.")
+                    except OperationError as e:
                         print(f"Error loading history: {e}")
-                        continue #pragma: no cover
+                    continue #pragma: no cover
+               
                 if command in ['add', 'subtract', 'multiply', 'divide', 'power', 'root', 'modulus', 'int_divide', 'percentage', 'abs_diff']: 
                     # Perform the specified arithmetic operation
                     try:
