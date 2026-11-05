@@ -280,16 +280,15 @@ class Calculator:
             raise OperationError(f"Failed to save history: {e}") #pragma: no cover
 
     
-def load_history(self) -> None:
-    """
-    Load calculation history from a CSV file.
+    
+    def load_history(self) -> bool:
+        try:
+            if not self.config.history_file.exists():
+                logging.info("No history file found")
+                return False
 
-    Replaces the current history and resets undo/redo stacks
-    to prevent outdated snapshots from being restored.
-    """
-    try:
-        if self.config.history_file.exists():
             df = pd.read_csv(self.config.history_file)
+
             if not df.empty:
                 loaded_history = [
                     Calculation.from_dict({
@@ -303,23 +302,22 @@ def load_history(self) -> None:
                 ]
             else:
                 loaded_history = []
-        else:
-            logging.info("No history file found")
-            return
-        # Replace current history only after loading succeeds
-        self.history = loaded_history
-        # Clear outdated undo/redo snapshots
-        self.undo_stack.clear()
-        self.redo_stack.clear()
-        # Notify observers if this method is used with registered observers
-        self.notify_history_changed()
-        logging.info(
-            f"Successfully loaded {len(self.history)} calculations"
-        )
-    except Exception as e:
-        logging.error(f"Failed to load history: {e}")
-        raise OperationError(f"Failed to load history: {e}")
 
+            self.history = loaded_history
+            self.undo_stack.clear()
+            self.redo_stack.clear()
+
+            self.notify_history_changed()
+
+            logging.info(
+                f"Successfully loaded {len(self.history)} calculations"
+            )
+
+            return True
+
+        except Exception as e:
+            logging.error(f"Failed to load history: {e}")
+            raise OperationError(f"Failed to load history: {e}")
 
     def get_history_dataframe(self) -> pd.DataFrame:
         """
@@ -365,7 +363,12 @@ def load_history(self) -> None:
         self.history.clear()
         self.undo_stack.clear()
         self.redo_stack.clear()
+        self.notify_history_changed()
         logging.info("History cleared")
+    
+    def notify_history_changed(self):
+        for observer in self.observers:
+            observer.update_history(self.history.copy())
 
     def undo(self) -> bool:
         """
@@ -385,6 +388,7 @@ def load_history(self) -> None:
         self.redo_stack.append(CalculatorMemento(self.history.copy()))
         # Restore the history from the memento
         self.history = memento.history.copy()
+        self.notify_history_changed()
         return True
 
     def redo(self) -> bool:
@@ -404,6 +408,7 @@ def load_history(self) -> None:
         self.undo_stack.append(CalculatorMemento(self.history.copy()))
         # Restore the history from the memento
         self.history = memento.history.copy()
+        self.notify_history_changed()
         return True
 
 #creating a function that will display a help message / instructions 
