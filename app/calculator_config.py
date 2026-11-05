@@ -77,7 +77,7 @@ class CalculatorConfig:
             max_history_size
             if max_history_size is not None
             else int(os.getenv('CALCULATOR_MAX_HISTORY_SIZE', '1000'))
-)
+        )
 
         # Auto-save preference
         auto_save_env = os.getenv('CALCULATOR_AUTO_SAVE', 'true').lower()
@@ -86,8 +86,10 @@ class CalculatorConfig:
         )
 
         # Calculation precision
-        self.precision = precision or int(
-            os.getenv('CALCULATOR_PRECISION', '10')
+        self.precision = (
+            precision
+            if precision is not None
+            else int(os.getenv('CALCULATOR_PRECISION', '10'))
         )
 
         # Maximum input value allowed
