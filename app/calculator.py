@@ -543,9 +543,9 @@ def calculator():
                     "power": "Power",
                     "root": "Root",
                     "modulus": "Modulus",
-                    "int_divide": "Integer Division",
+                    "int_divide": "IntegerDivision",
                     "percentage": "Percentage",
-                    "abs_diff": "Absolute Difference"}
+                    "abs_diff": "AbsoluteDifference"}
 
                 operation, num1_str, num2_str = user_input.split()
 
