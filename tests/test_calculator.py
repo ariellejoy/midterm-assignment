@@ -106,7 +106,7 @@ def test_perform_operation_operation_error(calculator_instance: Calculator):
 def test_incorrect_command(monkeypatch, capsys):
         inputs = iter(["add", "2", "3", "cancel", "exit"])
         monkeypatch.setattr("builtins.input", lambda _: next(inputs))
-        calc = Calculator
+        calc = Calculator()
         calculator_repl(calc)
         captured = capsys.readouterr()
         assert "Unknown command: 'cancel'. Type 'help' for available commands." in captured.out
@@ -270,14 +270,16 @@ def test_save_history(mock_to_csv, calculator_instance):
 def test_save_message(monkeypatch, capsys):
     inputs = iter(["save", "exit"])
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
-    calculator_repl()
+    calc = Calculator()
+    calculator_repl(calc)
     captured = capsys.readouterr()
     assert "History saved successfully." in captured.out
 
 def test_exit_saves_history(monkeypatch, capsys):
     inputs = iter(["exit"])
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
-    calculator_repl()
+    calc = Calculator()
+    calculator_repl(calc)
     captured = capsys.readouterr()
     assert "History saved successfully." in captured.out
     assert "Goodbye!" in captured.out
@@ -294,9 +296,11 @@ def test_save_history_error(monkeypatch, capsys):
         "exit"
     ])
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
-    calculator_repl()
+    calc = Calculator()
+    calculator_repl(calc)
     captured = capsys.readouterr()
-    assert "Error saving history: Save failed" in captured.out
+    assert "Error: Save failed" in captured.out
+    assert "Warning: Could not save history: Save failed" in captured.out
 
 @patch("app.calculator.Calculator")
 def test_save_command_success(mock_calculator, capsys):
@@ -368,7 +372,8 @@ def test_load_history(mock_exists, mock_read_csv, calculator_instance):
 def test_load_history_success(monkeypatch, capsys):
     inputs = iter(["load", "exit"])
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
-    calculator_repl()
+    calc = Calculator()
+    calculator_repl(calc)
     captured = capsys.readouterr()
     assert "History loaded successfully" in captured.out
 
@@ -384,9 +389,10 @@ def test_load_history_error(monkeypatch, capsys):
         "exit"
     ])
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
-    calculator_repl()
+    calc = Calculator()
+    calculator_repl(calc)
     captured = capsys.readouterr()
-    assert "Error loading history: Load failed" in captured.out
+    assert "Error: Load failed" in captured.out
 
 @patch("app.calculator.Calculator")
 def test_load_command_success(mock_calculator, capsys):
@@ -433,14 +439,6 @@ def test_clear_history(calculator_instance: Calculator):
     assert calculator_instance.undo_stack == []
     assert calculator_instance.redo_stack == []
 
-
-from unittest.mock import patch
-import pytest
-from colorama import Fore, Style
-
-from app.calculator import calculator
-
-
 @patch("app.calculator.Calculator")
 def test_clear_command(mock_calculator, capsys):
     """Test that the clear command clears calculation history."""
@@ -465,7 +463,8 @@ def test_clear_command(mock_calculator, capsys):
 @patch('builtins.print')
 def test_calculator_repl_exit(mock_print, mock_input):
     with patch('app.calculator.Calculator.save_history') as mock_save_history:
-        calculator_repl()
+        calc = Calculator()
+        calculator_repl(calc)
         mock_save_history.assert_called_once()
         mock_print.assert_any_call("History saved successfully.")
         mock_print.assert_any_call("Goodbye!")
@@ -473,13 +472,15 @@ def test_calculator_repl_exit(mock_print, mock_input):
 @patch('builtins.input', side_effect=['help', 'exit'])
 @patch('builtins.print')
 def test_calculator_repl_help(mock_print, mock_input):
-    calculator_repl()
+    calc = Calculator()
+    calculator_repl(calc)
     mock_print.assert_any_call("\nAvailable commands:")
 
 @patch('builtins.input', side_effect=['add', '2', '3', 'exit'])
 @patch('builtins.print')
 def test_calculator_repl_addition(mock_print, mock_input):
-    calculator_repl()
+    calc = Calculator()
+    calculator_repl(calc)
     mock_print.assert_any_call("\nResult: 5")
 
 
@@ -487,13 +488,14 @@ def test_calculator_repl_addition(mock_print, mock_input):
 @patch("app.calculator_repl.Calculator")
 def test_history_command(mock_calculator, capsys):
     """Test that the history command displays calculation history."""
-    calculator = mock_calculator.return_value
-    calculator.show_history.return_value = []
+
+    calculator_instance = mock_calculator.return_value
+    calculator_instance.show_history.return_value = []
 
     with patch("builtins.input", side_effect=["history", "exit"]):
-        calculator_repl()
+        calculator_repl(calculator_instance)
 
-    calculator.show_history.assert_called_once_with()
+    calculator_instance.show_history.assert_called_once_with()
 
     captured = capsys.readouterr()
     assert "No calculations in history" in captured.out
@@ -523,28 +525,32 @@ def test_history_command_calculator(
 def test_history_empty(monkeypatch, capsys):
     inputs = iter(["clear","history", "exit"])
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
-    calculator_repl()
+    calc = Calculator()
+    calculator_repl(calc)
     captured = capsys.readouterr()
     assert "No calculations in history" in captured.out
 
 def test_history_print(monkeypatch, capsys):
     inputs = iter(["add", "2", "3", "history", "exit"])
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
-    calculator_repl()
+    calc = Calculator()
+    calculator_repl(calc)
     captured = capsys.readouterr()
     assert "Calculation History:" in captured.out
 
 def test_cancelled_operation_first(monkeypatch, capsys):
     inputs = iter(["add", "cancel", "exit"])
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
-    calculator_repl()
+    calc = Calculator()
+    calculator_repl(calc)
     captured = capsys.readouterr()
     assert "Operation cancelled" in captured.out
 
 def test_cancelled_operation_second(monkeypatch, capsys):
     inputs = iter(["add", "4", "cancel", "exit"])
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
-    calculator_repl()
+    calc = Calculator()
+    calculator_repl(calc)
     captured = capsys.readouterr()
     assert "Operation cancelled" in captured.out
 
@@ -635,7 +641,8 @@ def test_validation_error(monkeypatch, capsys):
         "exit"
     ])
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
-    calculator_repl()
+    calc = Calculator()
+    calculator_repl(calc)
     captured = capsys.readouterr()
     assert "Error: Invalid input" in captured.out
 
@@ -653,6 +660,7 @@ def test_unexpected_calculation_error(monkeypatch, capsys):
         "exit"
     ])
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
-    calculator_repl()
+    calc = Calculator()
+    calculator_repl(calc)
     captured = capsys.readouterr()
     assert "Unexpected error: Something went wrong" in captured.out

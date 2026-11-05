@@ -120,13 +120,12 @@ def calculator_repl(calc):
                             if a.lower().strip() == 'cancel':
                                 print("Operation cancelled")
                                 break
-
                             try:
                                 validated_a = InputValidator.validate_number(a, calc.config)
                                 break
                             except ValidationError as e:
                                 print(f"Invalid first number: {e}")
-                        else:
+                        if a.lower().strip() == 'cancel':
                             continue
 
                         # Get and validate the second number
@@ -143,9 +142,8 @@ def calculator_repl(calc):
                             
                             except ValidationError as e:
                                 print(f"Invalid second number: {e}")
-                        else:
+                        if b.lower().strip() == 'cancel':
                             continue
-                
 
                         operation = OperationFactory.create_operation(command)
                         calc.set_operation(operation)
