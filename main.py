@@ -10,19 +10,29 @@ from app.calculator import Calculator
 from app.calculator_repl import calculator_repl
 from app.logger import Logger
 from app.history import LoggingObserver, AutoSaveObserver
+from app.calculator_config import CalculatorConfig
 
 
 def main():
+    # initializing configs 
+    calculator_config = CalculatorConfig()
+    calculator_config.validate()
+
+    # initializing logger
     logger = Logger()
-    calc = Calculator()
+
+    # initializing calculator using configs
+    calc = Calculator(config=calculator_config)
 
     calc.add_observer(LoggingObserver(logger))
     calc.add_observer(AutoSaveObserver(calc))
 
     logger.info("Starting the REPL calculator.")
 
-    calculator_repl(calc)
-
+    try: 
+        calculator_repl(calc)
+    finally:
+        logger.info("REPL Calculator session has ended.")
 
 if __name__ == "__main__":
     main()
