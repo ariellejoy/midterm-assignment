@@ -4,8 +4,6 @@
 # The "app" part is like a folder, and inside that folder, there's another file called "calculator.py",
 # which has the tool (function) called "calculator" that we need.
 
-import config
-
 from app.calculator import Calculator
 from app.calculator_repl import calculator_repl
 from app.logger import Logger
@@ -19,7 +17,7 @@ def main():
     calculator_config.validate()
 
     # initializing logger
-    logger = Logger()
+    logger = Logger(calculator_config)
 
     # initializing calculator using configs
     calc = Calculator(config=calculator_config)
