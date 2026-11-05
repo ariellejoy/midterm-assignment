@@ -10,16 +10,6 @@ from app.calculator_config import CalculatorConfig
 from app.exceptions import ValidationError
 
 @dataclass
-
-from dataclasses import dataclass
-from decimal import Decimal, InvalidOperation
-from typing import Any
-
-from app.calculator_config import CalculatorConfig
-from app.exceptions import ValidationError
-
-
-@dataclass
 class InputValidator:
     """Validates and sanitizes calculator inputs."""
 
