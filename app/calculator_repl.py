@@ -152,7 +152,7 @@ def calculator_repl():
                 # Handle Ctrl+C interruption gracefully
                 print("\nOperation cancelled")
                 continue #pragma: no cover
-            except EOFError: #pragma: no coverc
+            except EOFError: #pragma: no cover
                 # Handle end-of-file (e.g., Ctrl+D) gracefully
                 print("\nInput terminated. Exiting...")
                 break
