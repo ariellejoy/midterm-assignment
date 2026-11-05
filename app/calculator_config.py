@@ -93,8 +93,10 @@ class CalculatorConfig:
         )
 
         # Maximum input value allowed
-        self.max_input_value = max_input_value or Decimal(
-            os.getenv('CALCULATOR_MAX_INPUT_VALUE', '1e999')
+        self.max_input_value = (
+            max_input_value
+            if max_input_value is not None
+            else Decimal(os.getenv('CALCULATOR_MAX_INPUT_VALUE', '1e999'))
         )
 
         # Default encoding for file operations
