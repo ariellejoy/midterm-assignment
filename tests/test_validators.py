@@ -57,15 +57,15 @@ def test_validate_number_exceeds_negative_max_value():
         InputValidator.validate_number(-Decimal('1000001'), config)
 
 def test_validate_number_empty_string():
-    with pytest.raises(ValidationError, match="Invalid number format: "):
+    with pytest.raises(ValidationError, match="Input cannot be empty. Please enter a number."):
         InputValidator.validate_number("", config)
 
 def test_validate_number_whitespace_string():
-    with pytest.raises(ValidationError, match="Invalid number format: "):
+    with pytest.raises(ValidationError, match="Input cannot be empty. Please enter a number."):
         InputValidator.validate_number("   ", config)
 
 def test_validate_number_none_value():
-    with pytest.raises(ValidationError, match="Invalid number format: None"):
+    with pytest.raises(ValidationError, match="Input cannot be empty."):
         InputValidator.validate_number(None, config)
 
 def test_validate_number_non_numeric_type():
