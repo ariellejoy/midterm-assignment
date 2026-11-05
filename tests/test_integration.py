@@ -4,9 +4,36 @@ from pathlib import Path
 import csv
 import os
 import time
+import pytest
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 MAIN_FILE = PROJECT_ROOT / "main.py"
+
+@pytest.fixture(autouse=True)
+def isolate_calculator_files(tmp_path, monkeypatch):
+    """
+    Give every integration test its own history and log files.
+    Prevents tests from sharing data between executions.
+    """
+    monkeypatch.setenv(
+        "CALCULATOR_HISTORY_DIR",
+        str(tmp_path / "history")
+    )
+
+    monkeypatch.setenv(
+        "CALCULATOR_HISTORY_FILE",
+        str(tmp_path / "history" / "calculator_history.csv")
+    )
+
+    monkeypatch.setenv(
+        "CALCULATOR_LOG_DIR",
+        str(tmp_path / "logs")
+    )
+
+    monkeypatch.setenv(
+        "CALCULATOR_LOG_FILE",
+        str(tmp_path / "logs" / "calculator.log")
+    )
 
 
 def run_calculator(user_input, env=None, tmp_path=None):
@@ -16,7 +43,21 @@ def run_calculator(user_input, env=None, tmp_path=None):
         test_env.update(env)
 
     if tmp_path:
-        test_env["CALCULATOR_HISTORY_DIR"] = str(tmp_path)
+        history_dir = tmp_path / "history"
+        log_dir = tmp_path / "logs"
+
+        history_dir.mkdir(parents=True, exist_ok=True)
+        log_dir.mkdir(parents=True, exist_ok=True)
+
+        test_env["CALCULATOR_HISTORY_DIR"] = str(history_dir)
+        test_env["CALCULATOR_HISTORY_FILE"] = str(
+            history_dir / "calculator_history.csv"
+        )
+
+        test_env["CALCULATOR_LOG_DIR"] = str(log_dir)
+        test_env["CALCULATOR_LOG_FILE"] = str(
+            log_dir / "calculator.log"
+        )
 
     result = subprocess.run(
         [sys.executable, str(MAIN_FILE)],
@@ -27,6 +68,7 @@ def run_calculator(user_input, env=None, tmp_path=None):
         cwd=PROJECT_ROOT,
         env=test_env
     )
+
     return result
 
 def test_calculator_starts_and_exits():
@@ -284,7 +326,7 @@ def test_calculator_redo(tmp_path):
     assert "Operation undone" in result.stdout
     assert "No calculations in history" in result.stdout
     assert "Operation redone" in result.stdout
-    
+
 def test_calculator_new_operation_clears_redo():
     result = run_calculator(
         "add\n"
@@ -389,6 +431,91 @@ def test_calculator_autosaves_history(tmp_path):
     assert "Addition" in content
     assert "2" in content
     assert "3" in content
+
+def test_calculator_autosaves_after_undo_and_redo(tmp_path):
+
+    history_file = tmp_path / "calculator_history.csv"
+
+    env = os.environ.copy()
+    env["CALCULATOR_HISTORY_FILE"] = str(history_file)
+    env["CALCULATOR_AUTO_SAVE"] = "true"
+    env["PYTHONUNBUFFERED"] = "1"
+
+    process = subprocess.Popen(
+        [sys.executable, str(MAIN_FILE)],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.PIPE,
+        text=True,
+        cwd=PROJECT_ROOT,
+        env=env
+    )
+
+    def wait_for_history(expected_count):
+        deadline = time.monotonic() + 5
+
+        while time.monotonic() < deadline:
+            if history_file.exists():
+                with open(history_file, newline="") as file:
+                    rows = list(csv.DictReader(file))
+
+                if len(rows) == expected_count:
+                    return rows
+
+            if process.poll() is not None:
+                break
+
+            time.sleep(0.05)
+
+        raise AssertionError(
+            f"History did not contain {expected_count} "
+            "calculations within the expected time"
+        )
+
+    try:
+        # Perform a calculation.
+        process.stdin.write(
+            "add\n"
+            "2\n"
+            "3\n"
+        )
+        process.stdin.flush()
+
+        # Verify autosave after calculation.
+        rows = wait_for_history(1)
+
+        assert rows[0]["operation"] == "Addition"
+        assert rows[0]["result"] == "5"
+
+        # Undo the calculation.
+        process.stdin.write("undo\n")
+        process.stdin.flush()
+
+        # Verify autosave after undo.
+        rows = wait_for_history(0)
+
+        assert len(rows) == 0
+
+        # Redo the calculation.
+        process.stdin.write("redo\n")
+        process.stdin.flush()
+
+        # Verify autosave after redo.
+        rows = wait_for_history(1)
+
+        assert rows[0]["operation"] == "Addition"
+        assert rows[0]["operand1"] == "2"
+        assert rows[0]["operand2"] == "3"
+        assert rows[0]["result"] == "5"
+
+    finally:
+        if process.poll() is None:
+            process.stdin.write("exit\n")
+            process.stdin.flush()
+
+        process.communicate(timeout=10)
+
+    assert process.returncode == 0
 
 def test_calculator_autosaves_before_exit(tmp_path):
 
@@ -612,3 +739,56 @@ def test_calculator_load_empty_csv(tmp_path):
     assert result.returncode == 0
     assert "History loaded successfully" in result.stdout
     assert "No calculations in history" in result.stdout
+
+def test_calculator_respects_max_history_size(tmp_path):
+
+    env = os.environ.copy()
+    env["CALCULATOR_MAX_HISTORY_SIZE"] = "2"
+    env["CALCULATOR_AUTO_SAVE"] = "false"
+
+    result = run_calculator(
+        "add\n"
+        "1\n"
+        "2\n"
+        "add\n"
+        "3\n"
+        "4\n"
+        "add\n"
+        "5\n"
+        "6\n"
+        "history\n"
+        "exit\n",
+        env=env
+    )
+
+    assert result.returncode == 0
+
+    assert "Addition(3, 4) = 7" in result.stdout
+    assert "Addition(5, 6) = 11" in result.stdout
+
+    # The oldest calculation should have been removed.
+    assert "Addition(1, 2) = 3" not in result.stdout
+
+def test_calculator_respects_max_input_value():
+
+    env = os.environ.copy()
+    env["CALCULATOR_MAX_INPUT_VALUE"] = "10"
+    env["CALCULATOR_AUTO_SAVE"] = "false"
+
+    result = run_calculator(
+        "add\n"
+        "15\n"
+        "2\n"
+        "3\n"
+        "exit\n",
+        env=env
+    )
+
+    assert result.returncode == 0
+
+    # The first input should be rejected.
+    assert "Invalid first number" in result.stdout
+
+    # The subsequent valid calculation should succeed.
+    assert "Result: 5" in result.stdout
+
