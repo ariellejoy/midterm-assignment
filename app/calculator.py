@@ -209,7 +209,6 @@ class Calculator:
                 operand1=validated_a,
                 operand2=validated_b
             )
-
             # Save the current state to the undo stack before making changes
             self.undo_stack.append(CalculatorMemento(self.history.copy()))
 
@@ -378,10 +377,12 @@ class Calculator:
         Returns:
             bool: True if an operation was undone, False if there was nothing to undo.
         """
+
         if not self.undo_stack:
             return False
         # Pop the last state from the undo stack
         memento = self.undo_stack.pop()
+    
         # Push the current state onto the redo stack
         self.redo_stack.append(CalculatorMemento(self.history.copy()))
         # Restore the history from the memento
