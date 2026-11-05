@@ -104,9 +104,10 @@ def test_perform_operation_operation_error(calculator_instance: Calculator):
         calculator_instance.perform_operation(2, 3)
 
 def test_incorrect_command(monkeypatch, capsys):
-        inputs = iter(["add 2 3", "cancel", "exit"])
+        inputs = iter(["add", "2", "3", "cancel", "exit"])
         monkeypatch.setattr("builtins.input", lambda _: next(inputs))
-        calculator_repl()
+        calc = Calculator
+        calculator_repl(calc)
         captured = capsys.readouterr()
         assert "Unknown command: 'cancel'. Type 'help' for available commands." in captured.out
 
@@ -134,7 +135,8 @@ def test_redo_success(monkeypatch, capsys):
         "exit"
     ])
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
-    calculator_repl()
+    calc = Calculator()
+    calculator_repl(calc)
     captured = capsys.readouterr()
     assert "Operation undone" in captured.out
     assert "Operation redone" in captured.out
@@ -185,7 +187,8 @@ def test_redo_nothing_to_redo(monkeypatch, capsys):
         "exit"
     ])
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
-    calculator_repl()
+    calc = Calculator()
+    calculator_repl(calc)
     captured = capsys.readouterr()
     assert "Nothing to redo" in captured.out
 
@@ -205,9 +208,8 @@ def test_undo_operation(monkeypatch, capsys):
         "exit"
     ])
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
-
-    calculator_repl()
-
+    calc = Calculator()
+    calculator_repl(calc)
     captured = capsys.readouterr()
     assert "Operation undone" in captured.out
 
@@ -217,7 +219,8 @@ def test_undo_nothing_to_undo(monkeypatch, capsys):
         "exit"
     ])
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
-    calculator_repl()
+    calc = Calculator()
+    calculator_repl(calc)
     captured = capsys.readouterr()
     assert "Nothing to undo" in captured.out
 
