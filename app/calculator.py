@@ -307,8 +307,6 @@ class Calculator:
             self.undo_stack.clear()
             self.redo_stack.clear()
 
-            self.notify_history_changed()
-
             logging.info(
                 f"Successfully loaded {len(self.history)} calculations"
             )
