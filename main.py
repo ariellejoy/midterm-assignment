@@ -7,6 +7,7 @@
 import config
 
 from app.calculator import calculator
+from app.calculator_repl import calculator_repl
 from app.logger import Logger
 from app.history import LoggingObserver, AutoSaveObserver
 
@@ -24,4 +25,4 @@ def main():
     calculator.run()
 
 if __name__ == "__main__":
-    calculator()
+    calculator_repl()
