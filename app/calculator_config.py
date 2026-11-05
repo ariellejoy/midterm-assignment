@@ -81,9 +81,16 @@ class CalculatorConfig:
 
         # Auto-save preference
         auto_save_env = os.getenv('CALCULATOR_AUTO_SAVE', 'true').lower()
-        self.auto_save = auto_save if auto_save is not None else (
-            auto_save_env == 'true' or auto_save_env == '1'
-        )
+        if auto_save is not None:
+            self.auto_save = auto_save
+        elif auto_save_env in ('true', '1'):
+            self.auto_save = True
+        elif auto_save_env in ('false', '0'):
+            self.auto_save = False
+        else:
+            raise ConfigurationError(
+                f"Invalid CALCULATOR_AUTO_SAVE value: {auto_save_env}"
+            )
 
         # Calculation precision
         self.precision = (
