@@ -29,6 +29,7 @@ class HistoryObserver(ABC):
         """
         pass  # pragma: no cover
     
+    @abstractmethod
     def update_history(self, history: List[Calculation]) -> None:
         """
         Handle history change event.
@@ -126,7 +127,7 @@ class AutoSaveObserver(HistoryObserver):
         if self.calculator.config.auto_save:
             self.calculator.save_history()
             logging.info("History auto-saved")
-            
+
     def update_history(self, history: List[Calculation]) -> None:
         """
         Trigger auto-save after undo or redo.
