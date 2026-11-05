@@ -187,14 +187,15 @@ class Calculation:
         """
         Return string representation of calculation.
 
-        Provides a human-readable representation of the calculation, showing the
-        operation performed and its result.
-
-        Returns:
-            str: Formatted string showing the calculation and result.
+        Provides a human-readable representation of the calculation,
+        displaying numbers in standard decimal notation.
         """
-        return f"{self.operation}({self.operand1}, {self.operand2}) = {self.result}"
+        operand1 = format(self.operand1, 'f')
+        operand2 = format(self.operand2, 'f')
+        result = format(self.result, 'f')
 
+        return f"{self.operation}({operand1}, {operand2}) = {result}"
+    
     def __repr__(self) -> str:
         """
         Return detailed string representation of calculation.
