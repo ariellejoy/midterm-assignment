@@ -3,7 +3,7 @@
 ########################
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, List
 from app.calculation import Calculation
 
 import logging
@@ -26,6 +26,15 @@ class HistoryObserver(ABC):
 
         Args:
             calculation (Calculation): The calculation that was performed.
+        """
+        pass  # pragma: no cover
+    
+    def update_history(self, history: List[Calculation]) -> None:
+        """
+        Handle history change event.
+
+        Args:
+            history (List[Calculation]): The updated calculation history.
         """
         pass  # pragma: no cover
 
@@ -61,7 +70,22 @@ class LoggingObserver(HistoryObserver):
             calculation.operand2,
             calculation.result
         )
+    
+    def update_history(self, history: List[Calculation]) -> None:
+        """
+        Logs changes to calculation history
 
+        Args:
+            history (List[Calculation]): The updated calculation history.
+        """
+        if history is None: 
+             raise AttributeError("History cannot be None") 
+        
+        logging.info(
+            "Calculation history updated. "
+            "Current number of calculations: %d",
+            len(history)
+        )
 
 class AutoSaveObserver(HistoryObserver):
     """
@@ -102,4 +126,20 @@ class AutoSaveObserver(HistoryObserver):
         if self.calculator.config.auto_save:
             self.calculator.save_history()
             logging.info("History auto-saved")
+            
+    def update_history(self, history: List[Calculation]) -> None:
+        """
+        Trigger auto-save after undo or redo.
+        """
+        if history is None:
+            raise AttributeError("History cannot be None")
 
+        self._auto_save()
+
+    def _auto_save(self) -> None:
+        """
+        Save calculation history if auto-save is enabled.
+        """
+        if self.calculator.config.auto_save:
+            self.calculator.save_history()
+            logging.info("History auto-saved")
