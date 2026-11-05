@@ -545,7 +545,7 @@ def calculator():
                     "modulus": "Modulus",
                     "int_divide": "IntegerDivision",
                     "percentage": "Percentage",
-                    "abs_diff": "AbsoluteDifference"}
+                    "abs_diff": "AbsolutepDifference"}
 
                 operation, num1_str, num2_str = user_input.split()
 
