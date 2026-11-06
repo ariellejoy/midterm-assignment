@@ -21,6 +21,7 @@ from app.exceptions import OperationError, ValidationError
 from app.history import LoggingObserver, AutoSaveObserver
 from app.operations import OperationFactory, Operations
 from app.logger import Logger
+from app.calculator_repl import calculator_repl
 
 # Fixture to initialize Calculator with a temporary directory for file paths
 @pytest.fixture
@@ -480,9 +481,10 @@ def test_calculator_repl_help(mock_print, mock_input):
 @patch('builtins.input', side_effect=['add', '2', '3', 'exit'])
 @patch('builtins.print')
 def test_calculator_repl_addition(mock_print, mock_input):
-    calc = Calculator()
+    config = CalculatorConfig(precision=2)
+    calc = Calculator(config)
     calculator_repl(calc)
-    mock_print.assert_any_call(Fore.GREEN + Back.WHITE + Style.BRIGHT + "\nResult: 5" + Style.RESET_ALL)
+    mock_print.assert_any_call(Fore.GREEN + Back.WHITE + Style.BRIGHT + "\nResult: 5.00" + Style.RESET_ALL)
 
 @patch("app.calculator_repl.Calculator")
 def test_history_command(mock_calculator, capsys):
@@ -663,3 +665,96 @@ def test_unexpected_calculation_error(monkeypatch, capsys):
     calculator_repl(calc)
     captured = capsys.readouterr()
     assert "Unexpected error: Something went wrong" in captured.out
+
+@patch('builtins.input', side_effect=['divide', '1', '3', 'exit'])
+@patch('builtins.print')
+def test_calculator_repl_precision_2(mock_print, mock_input):
+    config = CalculatorConfig(precision=2)
+    calc = Calculator(config)
+
+    calculator_repl(calc)
+
+    mock_print.assert_any_call(
+        Fore.GREEN + Back.WHITE + Style.BRIGHT +
+        "\nResult: 0.33" +
+        Style.RESET_ALL
+    )
+
+@patch('builtins.input', side_effect=['divide', '1', '3', 'exit'])
+@patch('builtins.print')
+def test_calculator_repl_precision_4(mock_print, mock_input):
+    config = CalculatorConfig(precision=4)
+    calc = Calculator(config)
+
+    calculator_repl(calc)
+
+    mock_print.assert_any_call(
+        Fore.GREEN + Back.WHITE + Style.BRIGHT +
+        "\nResult: 0.3333" +
+        Style.RESET_ALL
+    )
+
+@patch('builtins.input', side_effect=['divide', '1', '3', 'exit'])
+@patch('builtins.print')
+def test_calculator_repl_default_precision(
+    mock_print, mock_input, monkeypatch
+):
+    monkeypatch.delenv("CALCULATOR_PRECISION", raising=False)
+
+    calc = Calculator()
+
+    calculator_repl(calc)
+
+    mock_print.assert_any_call(
+        Fore.GREEN + Back.WHITE + Style.BRIGHT +
+        "\nResult: 0.3333333333" +
+        Style.RESET_ALL
+    )
+
+@patch('builtins.input', side_effect=['divide', '1', '2', 'exit'])
+@patch('builtins.print')
+def test_calculator_repl_preserves_trailing_zeros(mock_print, mock_input):
+    config = CalculatorConfig(precision=2)
+    calc = Calculator(config)
+
+    calculator_repl(calc)
+
+    mock_print.assert_any_call(
+        Fore.GREEN + Back.WHITE + Style.BRIGHT +
+        "\nResult: 0.50" +
+        Style.RESET_ALL
+    )
+
+@patch('builtins.input', side_effect=['divide', '1', '3', 'exit'])
+@patch('builtins.print')
+def test_calculator_repl_environment_precision(
+    mock_print, mock_input, monkeypatch
+):
+    monkeypatch.setenv("CALCULATOR_PRECISION", "2")
+
+    config = CalculatorConfig()
+    calc = Calculator(config)
+
+    calculator_repl(calc)
+
+    mock_print.assert_any_call(
+        Fore.GREEN + Back.WHITE + Style.BRIGHT +
+        "\nResult: 0.33" +
+        Style.RESET_ALL
+    )
+
+@patch('builtins.input', side_effect=['multiply', '12.5', '16.7', 'exit'])
+@patch('builtins.print')
+def test_calculator_repl_precision_with_exact_result(
+    mock_print, mock_input
+):
+    config = CalculatorConfig(precision=3)
+    calc = Calculator(config)
+
+    calculator_repl(calc)
+
+    mock_print.assert_any_call(
+        Fore.GREEN + Back.WHITE + Style.BRIGHT +
+        "\nResult: 208.750" +
+        Style.RESET_ALL
+    )

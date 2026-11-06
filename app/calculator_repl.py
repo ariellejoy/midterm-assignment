@@ -148,12 +148,22 @@ def calculator_repl(calc):
                         operation = OperationFactory.create_operation(command)
                         calc.set_operation(operation)
 
+                        # Perform the calculation
                         result = calc.perform_operation(validated_a, validated_b)
 
+                        # Apply the configured precision to the displayed result
                         if isinstance(result, Decimal):
-                            result = format(result.normalize(), 'f')
+                            result = format(
+                                result,
+                                f".{calc.config.precision}f"
+                                )
 
-                        print(Fore.GREEN + Back.WHITE + Style.BRIGHT + f"\nResult: {result}" + Style.RESET_ALL)
+                        # Display the formatted result
+                        print(
+                            Fore.GREEN + Back.WHITE + Style.BRIGHT +
+                            f"\nResult: {result}" +
+                            Style.RESET_ALL
+                        )
 
                     except (ValidationError, OperationError) as e:
                         print(Fore.RED + f"Error: {e}" + Style.RESET_ALL)

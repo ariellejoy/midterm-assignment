@@ -175,15 +175,29 @@ class CalculatorConfig:
         """
         Validate configuration settings.
 
-        Ensures that all configuration parameters meet the required criteria.
-        Raises ConfigurationError if any validation fails.
-
         Raises:
             ConfigurationError: If any configuration parameter is invalid.
         """
-        if self.max_history_size <= 0:
-            raise ConfigurationError("max_history_size must be positive")
-        if self.precision <= 0:
-            raise ConfigurationError("precision must be positive")
+
+        if (
+            not isinstance(self.max_history_size, int)
+            or isinstance(self.max_history_size, bool)
+            or self.max_history_size < 0
+        ):
+            raise ConfigurationError(
+                "max_history_size cannot be negative"
+            )
+
+        if (
+            not isinstance(self.precision, int)
+            or isinstance(self.precision, bool)
+            or self.precision < 0
+        ):
+            raise ConfigurationError(
+                "precision must be positive"
+            )
+
         if self.max_input_value <= 0:
-            raise ConfigurationError("max_input_value must be positive")
+            raise ConfigurationError(
+                "max_input_value must be positive"
+            )
