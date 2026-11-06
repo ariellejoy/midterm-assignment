@@ -23,6 +23,19 @@ from app.operations import OperationFactory, Operations
 from app.logger import Logger
 from app.calculator_repl import calculator_repl
 
+@pytest.fixture
+def isolated_calculator(tmp_path, monkeypatch):
+    monkeypatch.delenv("CALCULATOR_HISTORY_FILE", raising=False)
+    monkeypatch.delenv("CALCULATOR_HISTORY_DIR", raising=False)
+    monkeypatch.delenv("CALCULATOR_BASE_DIR", raising=False)
+
+    config = CalculatorConfig(
+        base_dir=tmp_path,
+        max_history_size=3
+    )
+
+    return Calculator(config)
+
 # Fixture to initialize Calculator with a temporary directory for file paths
 @pytest.fixture
 def calculator_instance():
@@ -758,3 +771,196 @@ def test_calculator_repl_precision_with_exact_result(
         "\nResult: 208.750" +
         Style.RESET_ALL
     )
+
+def test_load_history_respects_max_history_size(isolated_calculator):
+    calculator = isolated_calculator
+
+    df = pd.DataFrame([
+        {
+            'operation': 'Addition',
+            'operand1': str(i),
+            'operand2': '1',
+            'result': str(i + 1),
+            'timestamp': f'2026-01-0{i}T10:00:00'
+        }
+        for i in range(1, 6)
+    ])
+
+    df.to_csv(calculator.config.history_file, index=False)
+
+    calculator.load_history()
+
+    assert len(calculator.history) == 3
+    assert calculator.history[0].operand1 == Decimal("3")
+    assert calculator.history[-1].operand1 == Decimal("5")
+
+def test_load_history_below_limit(isolated_calculator):
+    calculator = isolated_calculator
+
+    df = pd.DataFrame([
+        {
+            'operation': 'Addition',
+            'operand1': str(i),
+            'operand2': '1',
+            'result': str(i + 1),
+            'timestamp': f'2026-01-0{i}T10:00:00'
+        }
+        for i in range(1, 3)
+    ])
+
+    df.to_csv(calculator.config.history_file, index=False)
+
+    calculator.load_history()
+
+    assert len(calculator.history) == 2
+    assert calculator.history[0].operand1 == Decimal("1")
+    assert calculator.history[1].operand1 == Decimal("2")
+
+def test_load_history_with_zero_limit(tmp_path, monkeypatch):
+    monkeypatch.delenv("CALCULATOR_HISTORY_FILE", raising=False)
+    monkeypatch.delenv("CALCULATOR_HISTORY_DIR", raising=False)
+    monkeypatch.delenv("CALCULATOR_BASE_DIR", raising=False)
+
+    config = CalculatorConfig(
+        base_dir=tmp_path,
+        max_history_size=0
+    )
+
+    calculator = Calculator(config)
+
+    df = pd.DataFrame([
+        {
+            'operation': 'Addition',
+            'operand1': '1',
+            'operand2': '2',
+            'result': '3',
+            'timestamp': '2026-01-01T10:00:00'
+        }
+    ])
+
+    df.to_csv(config.history_file, index=False)
+
+    calculator.load_history()
+
+    assert calculator.history == []
+
+def test_load_history_retains_newest_calculations(isolated_calculator):
+    calculator = isolated_calculator
+
+    df = pd.DataFrame([
+        {
+            'operation': 'Addition',
+            'operand1': str(i),
+            'operand2': '1',
+            'result': str(i + 1),
+            'timestamp': f'2026-01-0{i}T10:00:00'
+        }
+        for i in range(1, 6)
+    ])
+
+    df.to_csv(calculator.config.history_file, index=False)
+
+    calculator.load_history()
+
+    assert len(calculator.history) == 3
+
+    assert calculator.history[0].operand1 == Decimal("3")
+    assert calculator.history[1].operand1 == Decimal("4")
+    assert calculator.history[2].operand1 == Decimal("5")
+
+def test_load_history_exactly_at_limit(tmp_path):
+    config = CalculatorConfig(
+        base_dir=tmp_path,
+        max_history_size=3
+    )
+
+    calculator = Calculator(config)
+
+    df = pd.DataFrame([
+        {
+            'operation': 'Addition',
+            'operand1': str(i),
+            'operand2': '1',
+            'result': str(i + 1),
+            'timestamp': f'2026-01-0{i}T10:00:00'
+        }
+        for i in range(1, 4)
+    ])
+
+    df.to_csv(config.history_file, index=False)
+
+    calculator.load_history()
+
+    assert len(calculator.history) == 3
+    assert calculator.history[0].operand1 == Decimal("1")
+    assert calculator.history[-1].operand1 == Decimal("3")
+
+def test_perform_operation_respects_max_history_size(tmp_path):
+    config = CalculatorConfig(
+        base_dir=tmp_path,
+        max_history_size=3
+    )
+
+    calculator = Calculator(config)
+    calculator.set_operation(
+        OperationFactory.create_operation('add')
+    )
+
+    for i in range(1, 5):
+        calculator.perform_operation(i, 1)
+
+    assert len(calculator.history) == 3
+
+    assert calculator.history[0].operand1 == Decimal("2")
+    assert calculator.history[1].operand1 == Decimal("3")
+    assert calculator.history[2].operand1 == Decimal("4")
+
+def test_load_history_missing_csv(isolated_calculator):
+    calculator = isolated_calculator
+
+    assert not calculator.config.history_file.exists()
+
+    result = calculator.load_history()
+
+    assert result is False
+    assert calculator.history == []
+
+def test_load_history_missing_csv_preserves_existing_history(
+    isolated_calculator
+):
+    calculator = isolated_calculator
+
+    calculator.set_operation(
+        OperationFactory.create_operation('add')
+    )
+
+    calculator.perform_operation(2, 3)
+
+    result = calculator.load_history()
+
+    assert result is False
+    assert len(calculator.history) == 1
+
+    assert calculator.history[0].operand1 == Decimal("2")
+    assert calculator.history[0].operand2 == Decimal("3")
+    assert calculator.history[0].result == Decimal("5")
+
+def test_load_history_empty_csv(isolated_calculator):
+    calculator = isolated_calculator
+
+    df = pd.DataFrame(
+        columns=[
+            'operation',
+            'operand1',
+            'operand2',
+            'result',
+            'timestamp'
+        ]
+    )
+
+    df.to_csv(calculator.config.history_file, index=False)
+
+    result = calculator.load_history()
+
+    assert result is True
+    assert calculator.history == []

@@ -302,7 +302,14 @@ class Calculator:
             else:
                 loaded_history = []
 
-            self.history = loaded_history
+            # Enforce maximum history size when loading from CSV
+            max_history = self.config.max_history_size
+
+            if max_history == 0:
+                self.history = []
+            else:
+                self.history = loaded_history[-max_history:]
+            
             self.undo_stack.clear()
             self.redo_stack.clear()
 
