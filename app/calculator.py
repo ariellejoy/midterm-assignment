@@ -239,16 +239,7 @@ class Calculator:
             # Ensure the history directory exists
             self.config.history_dir.mkdir(parents=True, exist_ok=True)
 
-            history_data = []
-            for calc in self.history:
-                # Serialize each Calculation instance to a dictionary
-                history_data.append({
-                    'operation': str(calc.operation),
-                    'operand1': str(calc.operand1),
-                    'operand2': str(calc.operand2),
-                    'result': str(calc.result),
-                    'timestamp': calc.timestamp.isoformat()
-                })
+            history_data = [calc.to_dict() for calc in self.history]
 
             if history_data:
                 # Create a pandas DataFrame from the history data
