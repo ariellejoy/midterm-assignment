@@ -4,22 +4,29 @@
 # The "app" part is like a folder, and inside that folder, there's another file called "calculator.py",
 # which has the tool (function) called "calculator" that we need.
 
+import sys
+from app.exceptions import ConfigurationError
+
 from app.calculator import Calculator
 from app.calculator_repl import calculator_repl
 from app.logger import Logger
 from app.history import LoggingObserver, AutoSaveObserver
 from app.calculator_config import CalculatorConfig
 
-
 def main():
-    # initializing configs 
-    calculator_config = CalculatorConfig()
-    calculator_config.validate()
+    try:
+        # Initialize and validate configuration
+        calculator_config = CalculatorConfig()
+        calculator_config.validate()
 
-    # initializing logger
+    except ConfigurationError as exc:
+        print(f"Configuration error: {exc}", file=sys.stderr)
+        return 1
+
+    # Initialize logger
     logger = Logger(calculator_config)
 
-    # initializing calculator using configs
+    # Initialize calculator
     calc = Calculator(config=calculator_config)
 
     calc.add_observer(LoggingObserver(logger))
@@ -27,10 +34,11 @@ def main():
 
     logger.info("Starting the REPL calculator.")
 
-    try: 
+    try:
         calculator_repl(calc)
     finally:
         logger.info("REPL Calculator session has ended.")
+    return 0
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

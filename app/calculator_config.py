@@ -3,7 +3,7 @@
 ########################
 
 from dataclasses import dataclass
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from numbers import Number
 from pathlib import Path
 import os
@@ -12,6 +12,33 @@ from typing import Optional
 from dotenv import load_dotenv
 
 from app.exceptions import ConfigurationError
+
+# helper functions
+def get_int_config(name: str, default: int) -> int:
+    """Read an integer environment variable safely."""
+    value = os.getenv(name, str(default))
+
+    try:
+        return int(value)
+    except (ValueError, TypeError) as exc:
+        raise ConfigurationError(
+            f"Invalid {name} value: expected an integer, got '{value}'"
+        ) from exc
+
+def get_decimal_config(name: str, default: str) -> Decimal:
+    """Read a decimal environment variable safely."""
+    value = os.getenv(name, default)
+    try:
+        result = Decimal(value)
+    except (InvalidOperation, ValueError, TypeError) as exc:
+        raise ConfigurationError(
+            f"Invalid {name} value: expected a number, got '{value}'"
+        ) from exc
+    if not result.is_finite():
+        raise ConfigurationError(
+            f"Invalid {name} value: must be a finite number"
+        )
+    return result
 
 # Load environment variables from a .env file into the program's environment
 load_dotenv()
@@ -76,7 +103,7 @@ class CalculatorConfig:
         self.max_history_size = (
             max_history_size
             if max_history_size is not None
-            else int(os.getenv('CALCULATOR_MAX_HISTORY_SIZE', '1000'))
+            else get_int_config('CALCULATOR_MAX_HISTORY_SIZE', 1000)
         )
 
         # Auto-save preference
@@ -96,14 +123,14 @@ class CalculatorConfig:
         self.precision = (
             precision
             if precision is not None
-            else int(os.getenv('CALCULATOR_PRECISION', '10'))
+            else get_int_config('CALCULATOR_PRECISION', 10)
         )
 
         # Maximum input value allowed
         self.max_input_value = (
             max_input_value
             if max_input_value is not None
-            else Decimal(os.getenv('CALCULATOR_MAX_INPUT_VALUE', '1e999'))
+            else get_decimal_config('CALCULATOR_MAX_INPUT_VALUE', '1e999')
         )
 
         # Default encoding for file operations
@@ -172,32 +199,33 @@ class CalculatorConfig:
         )).resolve()
 
     def validate(self) -> None:
-        """
-        Validate configuration settings.
-
-        Raises:
-            ConfigurationError: If any configuration parameter is invalid.
-        """
-
+        """Validate configuration settings."""
         if (
             not isinstance(self.max_history_size, int)
             or isinstance(self.max_history_size, bool)
             or self.max_history_size < 0
         ):
             raise ConfigurationError(
-                "max_history_size cannot be negative"
+                "max_history_size must be a non-negative integer"
             )
 
         if (
             not isinstance(self.precision, int)
             or isinstance(self.precision, bool)
-            or self.precision < 0
+            or self.precision <= 0
         ):
             raise ConfigurationError(
                 "precision must be positive"
             )
 
-        if self.max_input_value <= 0:
+        try:
+            max_value = Decimal(str(self.max_input_value))
+        except (InvalidOperation, ValueError, TypeError) as exc:
             raise ConfigurationError(
-                "max_input_value must be positive"
+                "max_input_value must be a valid number"
+            ) from exc
+
+        if not max_value.is_finite() or max_value <= 0:
+            raise ConfigurationError(
+                "max_input_value must be a positive finite number"
             )

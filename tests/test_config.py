@@ -76,13 +76,23 @@ def test_file_properties(monkeypatch):
     ).resolve()
 
 def test_invalid_max_history_size():
-    with pytest.raises(ConfigurationError, match="max_history_size cannot be negative"):
-        config = CalculatorConfig(max_history_size=-1)
+    config = CalculatorConfig(max_history_size=-1)
+    with pytest.raises(
+        ConfigurationError,
+        match="max_history_size must be a non-negative integer"
+    ):
         config.validate()
 
-def test_invalid_precision():
-    with pytest.raises(ConfigurationError, match="precision must be positive"):
-        config = CalculatorConfig(precision=-1)
+@pytest.mark.parametrize(
+    "precision",
+    [1.5, 2.0, True, -1, 0]
+)
+def test_invalid_precision_values(precision):
+    config = CalculatorConfig(precision=precision)
+    with pytest.raises(
+        ConfigurationError,
+        match="precision must be a positive integer"
+    ):
         config.validate()
 
 def test_invalid_max_input_value():
@@ -201,9 +211,33 @@ def test_precision_zero_decimal_places(monkeypatch):
 @pytest.mark.parametrize("precision", [1.5, "2", True, -1])
 def test_invalid_precision_values(precision):
     config = CalculatorConfig(precision=precision)
-
     with pytest.raises(
         ConfigurationError,
         match="precision must be positive"
     ):
         config.validate()
+
+def test_invalid_history_size(monkeypatch):
+    monkeypatch.setenv("CALCULATOR_MAX_HISTORY_SIZE", "abc")
+    with pytest.raises(ConfigurationError):
+        CalculatorConfig()
+
+def test_invalid_precision(monkeypatch):
+    monkeypatch.setenv("CALCULATOR_PRECISION", "abc")
+    with pytest.raises(ConfigurationError):
+        CalculatorConfig()
+
+def test_invalid_max_input_value(monkeypatch):
+    monkeypatch.setenv("CALCULATOR_MAX_INPUT_VALUE", "abc")
+    with pytest.raises(ConfigurationError):
+        CalculatorConfig()
+
+def test_invalid_auto_save(monkeypatch):
+    monkeypatch.setenv("CALCULATOR_AUTO_SAVE", "maybe")
+
+    with pytest.raises(ConfigurationError):
+        CalculatorConfig()
+
+def test_valid_configuration():
+    config = CalculatorConfig()
+    config.validate()
