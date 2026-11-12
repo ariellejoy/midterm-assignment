@@ -166,36 +166,26 @@ class Calculator:
         """
         self.operation_strategy = operation
         logging.info(f"Set operation: {operation}")
+    
+    def validate_input(self, value: Union[str, Number]) -> Decimal:
+        """
+        Validate and convert a user input into Decimal.
+        """
+        return InputValidator.validate_number(value, self.config)
 
     def perform_operation(
         self,
         a: Union[str, Number],
         b: Union[str, Number]
     ) -> CalculationResult:
-        """
-        Perform calculation with the current operation.
-
-        Validates and sanitizes user inputs, executes the calculation using the
-        current operation strategy, updates the history, and notifies observers.
-
-        Args:
-            a (Union[str, Number]): The first operand, can be a string or a numeric type.
-            b (Union[str, Number]): The second operand, can be a string or a numeric type.
-
-        Returns:
-            CalculationResult: The result of the calculation.
-
-        Raises:
-            OperationError: If no operation is set or if the operation fails.
-            ValidationError: If input validation fails.
-        """
+      
         if not self.operation_strategy:
             raise OperationError("No operation set") #pragma: no cover
 
         try:
-            # Inputs have already been validated by the REPL
-            validated_a = a
-            validated_b = b
+            # Validate and convert inputs to Decimal
+            validated_a = InputValidator.validate_number(a, self.config)
+            validated_b = InputValidator.validate_number(b, self.config)
 
             # Execute the operation strategy
             result = self.operation_strategy.execute(validated_a, validated_b)
@@ -415,6 +405,3 @@ class Calculator:
         self.history = memento.history.copy()
         self.notify_history_changed()
         return True
-
-if __name__ == "__main__":
-    calculator() # pragma no cover

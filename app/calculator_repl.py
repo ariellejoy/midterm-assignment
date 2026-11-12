@@ -8,11 +8,7 @@ from colorama import Fore, Back, Style
 
 from app.calculator import Calculator
 from app.exceptions import OperationError, ValidationError
-from app.history import AutoSaveObserver, LoggingObserver
 from app.operations import OperationFactory
-from app.logger import Logger
-from app.input_validators import InputValidator
-
 
 def calculator_repl(calc):
     """
@@ -106,10 +102,9 @@ def calculator_repl(calc):
                     continue #pragma: no cover
                
                 
-                
                 if command in ['add', 'subtract', 'multiply', 'divide',
-               'power', 'root', 'modulus', 'int_divide',
-               'percentage', 'abs_diff']:
+                            'power', 'root', 'modulus', 'int_divide',
+                            'percentage', 'abs_diff']:
 
                     try:
                         print(Back.CYAN + Style.BRIGHT + "\nEnter numbers (or 'cancel' to abort):" + Style.RESET_ALL)
@@ -121,15 +116,17 @@ def calculator_repl(calc):
                             if a.lower().strip() == 'cancel':
                                 print(Fore.YELLOW + "Operation cancelled" + Style.RESET_ALL)
                                 break
+
                             try:
-                                validated_a = InputValidator.validate_number(a, calc.config)
+                                validated_a = calc.validate_input(a)
                                 break
                             except ValidationError as e:
                                 print(Fore.RED + f"Invalid first number: {e}" + Style.RESET_ALL)
+
                         if a.lower().strip() == 'cancel':
                             continue
 
-                        # Get and validate the second number
+                         # Get and validate the second number
                         while True:
                             b = input(Style.BRIGHT + "Second number: " + Style.RESET_ALL)
 
@@ -138,33 +135,29 @@ def calculator_repl(calc):
                                 break
 
                             try:
-                                validated_b = InputValidator.validate_number(b, calc.config)
+                                validated_b = calc.validate_input(b)
                                 break
-                            
                             except ValidationError as e:
                                 print(Fore.RED + f"Invalid second number: {e}" + Style.RESET_ALL)
+
                         if b.lower().strip() == 'cancel':
                             continue
 
+                        # Select operation
                         operation = OperationFactory.create_operation(command)
                         calc.set_operation(operation)
 
-                        # Perform the calculation
+                        # Perform calculation
                         result = calc.perform_operation(validated_a, validated_b)
 
-                        # Apply the configured precision to the displayed result
+                        # Format result
                         if isinstance(result, Decimal):
                             result = format(
                                 result,
                                 f".{calc.config.precision}f"
-                                )
+                            )
 
-                        # Display the formatted result
-                        print(
-                            Fore.GREEN + Back.WHITE + Style.BRIGHT +
-                            f"\nResult: {result}" +
-                            Style.RESET_ALL
-                        )
+                        print(Fore.GREEN + Back.WHITE + Style.BRIGHT + f"\nResult: {result}" + Style.RESET_ALL)
 
                     except (ValidationError, OperationError) as e:
                         print(Fore.RED + f"Error: {e}" + Style.RESET_ALL)

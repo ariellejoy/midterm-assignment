@@ -7,9 +7,7 @@ import datetime
 from decimal import Decimal, InvalidOperation
 import logging
 from typing import Any, Dict
-
 from app.exceptions import OperationError
-
 
 @dataclass
 class Calculation:
@@ -31,98 +29,89 @@ class Calculation:
     result: Decimal # The result of the calculation, computed post-initialization
     timestamp: datetime.datetime = field(default_factory=datetime.datetime.now)  # Time when the calculation was performed
 
-    def __post_init__(self):
-        """
-        Post-initialization processing.
+    # def calculate(self) -> Decimal:
+    #     """
+    #     Execute calculation using the specified operation.
 
-        Automatically calculates the result of the operation after the Calculation
-        instance is created.
-        """
-        self.result = self.calculate()
+    #     Utilizes a dictionary to map operation names to their corresponding
+    #     lambda functions, enabling dynamic execution of operations based on
+    #     the operation name.
 
-    def calculate(self) -> Decimal:
-        """
-        Execute calculation using the specified operation.
+    #     Returns:
+    #         Decimal: The result of the calculation.
 
-        Utilizes a dictionary to map operation names to their corresponding
-        lambda functions, enabling dynamic execution of operations based on
-        the operation name.
+    #     Raises:
+    #         OperationError: If the operation is unknown or the calculation fails.
+    #     """
+    #     # Mapping of operation names to their corresponding functions
+    #     operations = {
+    #         "Addition": lambda x, y: x + y,
+    #         "Subtraction": lambda x, y: x - y,
+    #         "Multiplication": lambda x, y: x * y,
+    #         "Division": lambda x, y: x / y if y != 0 else self._raise_div_zero(),
+    #         "Power": lambda x, y: Decimal(pow(float(x), float(y))) if y >= 0 else self._raise_neg_power(),
+    #         "Root": lambda x, y: (
+    #             Decimal(pow(float(x), 1 / float(y))) 
+    #             if x >= 0 and y != 0 
+    #             else self._raise_invalid_root(x, y)
+    #         ),
+    #          "Modulus": lambda x, y: (
+    #             x % y if y != 0 else self._raise_div_zero()
+    #         ),
+    #         "IntegerDivision": lambda x, y: (
+    #             x // y if y != 0 else self._raise_div_zero()
+    #          ),
+    #         "Percentage": lambda x, y: (x / y) * Decimal("100") if y != 0 else self._raise_div_zero(),
+    #         "AbsoluteDifference": lambda x, y: abs(x - y)
+    #     }
 
-        Returns:
-            Decimal: The result of the calculation.
+    #     # Retrieve the operation function based on the operation name
+    #     op = operations.get(self.operation)
+    #     if not op:
+    #         raise OperationError(f"Unknown operation: {self.operation}")
 
-        Raises:
-            OperationError: If the operation is unknown or the calculation fails.
-        """
-        # Mapping of operation names to their corresponding functions
-        operations = {
-            "Addition": lambda x, y: x + y,
-            "Subtraction": lambda x, y: x - y,
-            "Multiplication": lambda x, y: x * y,
-            "Division": lambda x, y: x / y if y != 0 else self._raise_div_zero(),
-            "Power": lambda x, y: Decimal(pow(float(x), float(y))) if y >= 0 else self._raise_neg_power(),
-            "Root": lambda x, y: (
-                Decimal(pow(float(x), 1 / float(y))) 
-                if x >= 0 and y != 0 
-                else self._raise_invalid_root(x, y)
-            ),
-             "Modulus": lambda x, y: (
-                x % y if y != 0 else self._raise_div_zero()
-            ),
-            "IntegerDivision": lambda x, y: (
-                x // y if y != 0 else self._raise_div_zero()
-             ),
-            "Percentage": lambda x, y: (x / y) * Decimal("100") if y != 0 else self._raise_div_zero(),
-            "AbsoluteDifference": lambda x, y: abs(x - y)
-        }
+    #     try:
+    #         # Execute the operation with the provided operands
+    #         return op(self.operand1, self.operand2)
+    #     except (InvalidOperation, ValueError, ArithmeticError) as e:
+    #         # Handle any errors that occur during calculation
+    #         raise OperationError(f"Calculation failed: {str(e)}") #pragma: no cover
 
-        # Retrieve the operation function based on the operation name
-        op = operations.get(self.operation)
-        if not op:
-            raise OperationError(f"Unknown operation: {self.operation}")
+    # @staticmethod
+    # def _raise_div_zero():  # pragma: no cover
+    #     """
+    #     Helper method to raise division by zero error.
 
-        try:
-            # Execute the operation with the provided operands
-            return op(self.operand1, self.operand2)
-        except (InvalidOperation, ValueError, ArithmeticError) as e:
-            # Handle any errors that occur during calculation
-            raise OperationError(f"Calculation failed: {str(e)}") #pragma: no cover
+    #     This method is called when a division by zero is attempted.
+    #     """
+    #     raise OperationError("Division by zero is not allowed")
 
-    @staticmethod
-    def _raise_div_zero():  # pragma: no cover
-        """
-        Helper method to raise division by zero error.
+    # @staticmethod
+    # def _raise_neg_power():  # pragma: no cover
+    #     """
+    #     Helper method to raise negative power error.
 
-        This method is called when a division by zero is attempted.
-        """
-        raise OperationError("Division by zero is not allowed")
+    #     This method is called when a negative exponent is used in a power operation.
+    #     """
+    #     raise OperationError("Negative exponents are not supported")
 
-    @staticmethod
-    def _raise_neg_power():  # pragma: no cover
-        """
-        Helper method to raise negative power error.
+    # @staticmethod
+    # def _raise_invalid_root(x: Decimal, y: Decimal):  # pragma: no cover
+    #     """
+    #     Helper method to raise invalid root error.
 
-        This method is called when a negative exponent is used in a power operation.
-        """
-        raise OperationError("Negative exponents are not supported")
+    #     This method is called when an invalid root operation is attempted, such as
+    #     taking the root of a negative number or using zero as the root degree.
 
-    @staticmethod
-    def _raise_invalid_root(x: Decimal, y: Decimal):  # pragma: no cover
-        """
-        Helper method to raise invalid root error.
-
-        This method is called when an invalid root operation is attempted, such as
-        taking the root of a negative number or using zero as the root degree.
-
-        Args:
-            x (Decimal): The number from which the root is taken.
-            y (Decimal): The degree of the root.
-        """
-        if y == 0:
-            raise OperationError("Zero root is undefined")
-        if x < 0:
-            raise OperationError("Cannot calculate root of negative number")
-        raise OperationError("Invalid root operation")
+    #     Args:
+    #         x (Decimal): The number from which the root is taken.
+    #         y (Decimal): The degree of the root.
+    #     """
+    #     if y == 0:
+    #         raise OperationError("Zero root is undefined")
+    #     if x < 0:
+    #         raise OperationError("Cannot calculate root of negative number")
+    #     raise OperationError("Invalid root operation")
 
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -146,39 +135,16 @@ class Calculation:
     def from_dict(data: Dict[str, Any]) -> 'Calculation':
         """
         Create calculation from dictionary.
-
-        This method reconstructs a Calculation instance from a dictionary, ensuring
-        that all required fields are present and correctly formatted.
-
-        Args:
-            data (Dict[str, Any]): Dictionary containing calculation data.
-
-        Returns:
-            Calculation: A new instance of Calculation with data populated from the dictionary.
-
-        Raises:
-            OperationError: If data is invalid or missing required fields.
+        Reconstructs a Calculation instance from saved data.
         """
         try:
-            # Create the calculation object with the original operands
-            calc = Calculation(
+            return Calculation(
                 operation=data['operation'],
                 operand1=Decimal(data['operand1']),
-                operand2=Decimal(data['operand2'])
+                operand2=Decimal(data['operand2']),
+                result=Decimal(data['result']),
+                timestamp=datetime.datetime.fromisoformat(data['timestamp'])
             )
-
-            # Set the timestamp from the saved data
-            calc.timestamp = datetime.datetime.fromisoformat(data['timestamp'])
-
-            # Verify the result matches (helps catch data corruption)
-            saved_result = Decimal(data['result'])
-            if calc.result != saved_result:
-                logging.warning(
-                    f"Loaded calculation result {saved_result} "
-                    f"differs from computed result {calc.result}"
-                )  # pragma: no cover
-
-            return calc
 
         except (KeyError, InvalidOperation, ValueError) as e:
             raise OperationError(f"Invalid calculation data: {str(e)}")
