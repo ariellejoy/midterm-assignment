@@ -78,3 +78,20 @@ def test_autosave_observer_no_calculation():
     with pytest.raises(AttributeError):
         observer.update(None)  # Passing None should raise an exception
 
+def test_when_history_is_none():
+    # Arrange
+    logger = Mock()
+    observer = LoggingObserver(logger)
+
+    # Act & Assert
+    with pytest.raises(AttributeError, match="History cannot be None"):
+        observer.update_history(None)
+
+def test_update_history_when_history_is_none():
+    # Arrange
+    calculator = Mock()
+    observer = AutoSaveObserver(calculator)
+
+    # Act & Assert
+    with pytest.raises(AttributeError, match="History cannot be None"):
+        observer.update_history(None)

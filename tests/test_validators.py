@@ -71,3 +71,12 @@ def test_validate_number_none_value():
 def test_validate_number_non_numeric_type():
     with pytest.raises(ValidationError, match="Invalid number format: "):
         InputValidator.validate_number([], config)
+
+def test_validate_number_not_finite():
+    config = CalculatorConfig()
+    with pytest.raises(
+        ValidationError,
+        match="Input must be a finite number."
+    ):
+        InputValidator.validate_number("NaN", config)
+

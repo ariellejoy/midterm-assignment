@@ -5,6 +5,10 @@ import csv
 import os
 import time
 import pytest
+import logging 
+
+from app.logger import Logger
+from app.calculator_config import CalculatorConfig
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 MAIN_FILE = PROJECT_ROOT / "main.py"
@@ -791,4 +795,3 @@ def test_calculator_respects_max_input_value():
 
     # The subsequent valid calculation should succeed.
     assert "Result: 5" in result.stdout
-
