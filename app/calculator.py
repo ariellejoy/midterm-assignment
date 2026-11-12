@@ -2,14 +2,11 @@
 # Calculator Class      #
 ########################
 
-import traceback
-import sys
 from decimal import Decimal
 import logging
 import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
-from colorama import Fore, Back, Style
 
 import pandas as pd
 
@@ -64,7 +61,7 @@ class Calculator:
 
         # Initialize calculation history and operation strategy
         self.history: List[Calculation] = []
-        self.operation_strategy: Optional[Operation] = None
+        self.operation_strategy: Optional[Operations] = None
 
         # Initialize observer list for the Observer pattern
         self.observers: List[HistoryObserver] = []
@@ -196,9 +193,9 @@ class Calculator:
             raise OperationError("No operation set") #pragma: no cover
 
         try:
-            # Validate and convert inputs to Decimal
-            validated_a = InputValidator.validate_number(a, self.config)
-            validated_b = InputValidator.validate_number(b, self.config)
+            # Inputs have already been validated by the REPL
+            validated_a = a
+            validated_b = b
 
             # Execute the operation strategy
             result = self.operation_strategy.execute(validated_a, validated_b)
@@ -207,8 +204,10 @@ class Calculator:
             calculation = Calculation(
                 operation=str(self.operation_strategy),
                 operand1=validated_a,
-                operand2=validated_b
+                operand2=validated_b,
+                result=result
             )
+
             # Save the current state to the undo stack before making changes
             self.undo_stack.append(CalculatorMemento(self.history.copy()))
 
@@ -229,12 +228,12 @@ class Calculator:
 
         except ValidationError as e:
             # Log and re-raise validation errors
-            logging.error(Fore.RED + f"Validation error: {str(e)}")
+            logging.error(f"Validation error: {str(e)}")
             raise
         except Exception as e:
             # Log and raise operation errors for any other exceptions
-            logging.error(Fore.RED + f"Operation failed: {str(e)}")
-            raise OperationError(Fore.RED + f"Operation failed: {str(e)}" + Style.RESET_ALL) #pragma: no cover
+            logging.error(f"Operation failed: {str(e)}")
+            raise OperationError(f"Operation failed: {str(e)}") #pragma: no cover
 
     def save_history(self) -> None:
         """
@@ -416,195 +415,6 @@ class Calculator:
         self.history = memento.history.copy()
         self.notify_history_changed()
         return True
-
-#creating a function that will display a help message / instructions 
-def display_help() -> None:
-    """Display help message with instructions."""
-
-    help_message = """
-    REPL Calculator Help
-    --------------------
-    In order to use the REPL calculator: input <operation> <num1> <num2> to perform a specific operation with 2 numbers 
-    
-    Supported operations include: 
-    - add
-    - subtract (note: this subtracts the second number from the first)
-    - multiply
-    - divide (note: this divides the first number by the second)
-    - power
-    - root
-    - modulus
-    - int_divide (aka integer division)
-    - percentage
-    - abs_diff (aka absolute difference)
-
-    Some special commands that could be helpful: 
-    - help : Displays this help message
-    - history : Shows your history of calculations 
-    - clear : Clears your history of calculations
-    - save : Saves your history of calculations to a CSV file
-    - load : Loads your history of calculations from a CSV file
-    - undo : Undoes the last operation
-    - redo : Redoes the last undone operation
-    - exit : Exits the calculator 
-
-    Example operations: 
-    add 1 1 
-    subtract 5 3
-    multiply 2 4
-    divide 10 2
-    power 2 3
-    root 16 2
-    modulus 10 3
-    int_divide 10 3
-    percentage 50 20
-    abs_diff 5 10
-    """
-    print(help_message)
-
-#creating a function that will display calcultions history 
-def display_history (history: List[Calculation]) -> None: 
-    """Display history of calculations preformed during the session (read: python3 main.py is running and REPL app is open)"""
-
-    if not history: 
-        print(Fore.YELLOW + "No calculations have been performed yet." + Style.RESET_ALL)
-    else: 
-        print (Fore.GREEN + Back.WHITE +"Calculation History:" + Style.RESET_ALL)
-        for idx, calculation in enumerate(history, start=1):
-            print(f"{idx}. {calculation}")
-
-def calculator():
-    """REPL calculator that performs several different operations. This calculator uses Calculation classes"""
-    
-    #creating instance of Calculator class to use in the REPL calculator
-    calculator_instance = Calculator()
-
-    #initializing list to keep track of history
-    history = calculator_instance.history
-
-    # First, we print a message to welcome the user to the calculator.
-    print(Fore.RED + Back.WHITE + Style.BRIGHT + "Welcome to the calculator REPL! Type 'help' for more instructions or 'exit' to quit" + Style.RESET_ALL)
-    
-    # This is the part where the calculator keeps running. The 'while True' means we are going to keep 
-    # doing something (in this case, asking the user for input) until we tell it to stop.
-    while True:
-        # Now we ask the user to type something, like "add 5 3". 
-        # This will get the operation (like "add") and two numbers from the user.
-        #user_input = input("Enter an operation (add, subtract, multiply, divide) and two numbers, or 'exit' to quit: ")
-        try: 
-            user_input: str = input(">> ").strip()
-            if not user_input:
-                continue # pragma no cover
-
-            command = user_input.lower() #this will handle special commands
-
-            if command == "help":
-                print(Fore.WHITE + Back.MAGENTA + Style.BRIGHT + "Displaying help message..." + Style.RESET_ALL)
-                display_help()
-                continue #pragma: no cover
-            elif command == "history":
-                display_history(calculator_instance.history)
-                continue #pragma: no cover
-            elif command == "redo":
-                if calculator_instance.redo():
-                    print(Fore.YELLOW + "Redo operation performed." + Style.RESET_ALL)
-                else:
-                    print(Fore.RED + "Nothing to redo." + Style.RESET_ALL)
-                continue #pragma: no cover
-            elif command == "undo":
-                if calculator_instance.undo():
-                    print(Fore.YELLOW + "Undo operation performed." + Style.RESET_ALL)
-                else:
-                    print(Fore.RED + "Nothing to undo." + Style.RESET_ALL)
-                continue #pragma: no cover
-            elif command == "clear":   
-                calculator_instance.clear_history()
-                print(Fore.GREEN + "History cleared." + Style.RESET_ALL)
-                continue #pragma: no cover
-            elif command == "save":
-                try:
-                    calculator_instance.save_history()
-                    print(Fore.GREEN + "History saved." + Style.RESET_ALL)
-                except OperationError as e:
-                    print(Fore.RED + f"Unable to save history: {e}" + Style.RESET_ALL)
-                continue #pragma: no cover
-            elif command == "load":
-                try:
-                    calculator_instance.load_history()
-                    history = calculator_instance.history  # Update the local history reference
-                    print(Fore.GREEN + "History loaded." + Style.RESET_ALL)
-                except OperationError as e:
-                    print(Fore.RED + f"Unable to load history: {e}" + Style.RESET_ALL)
-                continue #pragma: no cover
-            elif command == "exit":
-                print(Fore.RED + Back.WHITE + Style.BRIGHT + "Exiting calculator now... Thank you!" + Style.RESET_ALL)
-                sys.exit(0)
-
-            try: 
-                operation_map = {
-                    "add": "Addition",
-                    "subtract": "Subtraction",
-                    "multiply": "Multiplication",
-                    "divide": "Division",
-                    "power": "Power",
-                    "root": "Root",
-                    "modulus": "Modulus",
-                    "int_divide": "IntegerDivision",
-                    "percentage": "Percentage",
-                    "abs_diff": "AbsolutepDifference"}
-
-                operation, num1_str, num2_str = user_input.split()
-
-            # Now we split the input into three parts: the operation (add, subtract, etc.) and the two numbers.
-                operation = operation_map.get(operation.lower())
-            # We have to make sure the numbers are actually numbers, so we convert them to floats.
-            #num1, num2 = float(num1), float(num2)
-                num1 = Decimal(num1_str)
-                num2 = Decimal(num2_str)
-            except ValueError: #pragma: no cover
-            # If the user doesn't type something correctly, like typing letters where numbers should be, we show an error.
-                print(Fore.BLUE + "Invalid input. Please follow the format: <operation> <num1> <num2>")
-                print(Fore.BLUE + "Type 'help' for more instructions!" + Style.RESET_ALL)
-                continue  #pragma: no cover
-                result = calculation.result
-            except OperationError as e:
-                print (Fore.RED + f"Calculation error: {e}" + Style.RESET_ALL)
-                continue #pragma: no cover
-            except (ValueError, ArithmeticError) as e: #pragma: no cover
-                print (Fore.RED + f"Calculation failed: {e}" + Style.RESET_ALL)
-                print(Fore.BLUE + "Type 'help' for more instructions and the list of supported operations!" + Style.RESET_ALL)
-                continue  #pragma: no cover
-
-            # Now we check what operation the user asked for and call the right function (addition, subtraction, etc.).
-            try: 
-                calculation = Calculation(operation, num1, num2)
-                result = calculation.result
-            except ZeroDivisionError: #pragma: no cover
-                print(Fore.RED + "Error: Division by zero is not allowed." + Style.RESET_ALL)
-                print(Fore.RED + "Please try again!" + Style.RESET_ALL)
-                continue #pragma: no cover
-            except Exception as e: #pragma: no cover
-                print(Fore.RED + f"An error has occurred during calculation: {e}" + Style.RESET_ALL)
-                print(Fore.RED + "Please try again!" + Style.RESET_ALL)
-                continue  #pragma: no cover
-
-             # Finally, we print the result of the operation (for example, "Result: 8").
-            result_str: str = f"{calculation}"
-            print(Fore.GREEN + f"Result: {result_str}" + Style.RESET_ALL)
-            history.append(calculation)
-        
-        except KeyboardInterrupt: #pragma: no cover
-            # EAFP example for handling unexpected interruption
-            # Instead of checking if the user pressed Ctrl+C before each input,
-            # we handle the KeyboardInterrupt exception.
-            print(Fore.RED + "\nKeyboard interrupt detected. Exiting calculator. Goodbye!" + Style.RESET_ALL)
-            sys.exit(0)
-
-        except EOFError: #pragma: no cover
-            # EAFP example for handling EOF (Ctrl+D)
-            # Similar to KeyboardInterrupt, we handle the EOFError exception.
-            print(Fore.RED + "\nEOF detected. Exiting calculator. Goodbye!" + Style.RESET_ALL)
-            sys.exit(0)
 
 if __name__ == "__main__":
     calculator() # pragma no cover

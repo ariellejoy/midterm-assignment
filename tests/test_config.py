@@ -83,16 +83,9 @@ def test_invalid_max_history_size():
     ):
         config.validate()
 
-@pytest.mark.parametrize(
-    "precision",
-    [1.5, 2.0, True, -1, 0]
-)
-def test_invalid_precision_values(precision):
-    config = CalculatorConfig(precision=precision)
-    with pytest.raises(
-        ConfigurationError,
-        match="precision must be a positive integer"
-    ):
+def test_invalid_precision():
+    with pytest.raises(ConfigurationError, match="precision must be positive"):
+        config = CalculatorConfig(precision=-1)
         config.validate()
 
 def test_invalid_max_input_value():

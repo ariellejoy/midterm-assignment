@@ -28,7 +28,7 @@ class Calculation:
     operand2: Decimal       # The second operand in the calculation
 
     # Fields with default values
-    result: Decimal = field(init=False)  # The result of the calculation, computed post-initialization
+    result: Decimal # The result of the calculation, computed post-initialization
     timestamp: datetime.datetime = field(default_factory=datetime.datetime.now)  # Time when the calculation was performed
 
     def __post_init__(self):

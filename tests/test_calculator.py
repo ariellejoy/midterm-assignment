@@ -868,13 +868,8 @@ def test_load_history_retains_newest_calculations(isolated_calculator):
     assert calculator.history[1].operand1 == Decimal("4")
     assert calculator.history[2].operand1 == Decimal("5")
 
-def test_load_history_exactly_at_limit(tmp_path):
-    config = CalculatorConfig(
-        base_dir=tmp_path,
-        max_history_size=3
-    )
-
-    calculator = Calculator(config)
+def test_load_history_exactly_at_limit(isolated_calculator):
+    calculator = isolated_calculator
 
     df = pd.DataFrame([
         {
@@ -887,13 +882,15 @@ def test_load_history_exactly_at_limit(tmp_path):
         for i in range(1, 4)
     ])
 
-    df.to_csv(config.history_file, index=False)
+    df.to_csv(calculator.config.history_file, index=False)
 
     calculator.load_history()
 
     assert len(calculator.history) == 3
+
     assert calculator.history[0].operand1 == Decimal("1")
-    assert calculator.history[-1].operand1 == Decimal("3")
+    assert calculator.history[1].operand1 == Decimal("2")
+    assert calculator.history[2].operand1 == Decimal("3")
 
 def test_perform_operation_respects_max_history_size(tmp_path):
     config = CalculatorConfig(
@@ -964,3 +961,62 @@ def test_load_history_empty_csv(isolated_calculator):
 
     assert result is True
     assert calculator.history == []
+
+def test_undo_restores_history_within_limit(isolated_calculator):
+    calculator = isolated_calculator
+
+    calculator.set_operation(
+        OperationFactory.create_operation('add')
+    )
+
+    # Add three calculations
+    calculator.perform_operation(1, 1)
+    calculator.perform_operation(2, 2)
+    calculator.perform_operation(3, 3)
+
+    assert len(calculator.history) == 3
+
+    # Add a fourth calculation
+    calculator.perform_operation(4, 4)
+
+    assert len(calculator.history) == 3
+
+    # Undo the fourth calculation
+    calculator.undo()
+
+    assert len(calculator.history) == 3
+
+    assert calculator.history[0].operand1 == Decimal("1")
+    assert calculator.history[1].operand1 == Decimal("2")
+    assert calculator.history[2].operand1 == Decimal("3")
+
+def test_redo_restores_history_within_limit(isolated_calculator):
+    calculator = isolated_calculator
+
+    calculator.set_operation(
+        OperationFactory.create_operation('add')
+    )
+
+    # Perform three calculations
+    calculator.perform_operation(1, 1)
+    calculator.perform_operation(2, 2)
+    calculator.perform_operation(3, 3)
+
+    # Perform a fourth calculation
+    calculator.perform_operation(4, 4)
+
+    assert len(calculator.history) == 3
+
+    # Undo the fourth calculation
+    calculator.undo()
+
+    assert len(calculator.history) == 3
+
+    # Redo the fourth calculation
+    calculator.redo()
+
+    assert len(calculator.history) == 3
+
+    assert calculator.history[0].operand1 == Decimal("2")
+    assert calculator.history[1].operand1 == Decimal("3")
+    assert calculator.history[2].operand1 == Decimal("4")

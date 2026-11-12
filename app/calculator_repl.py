@@ -6,12 +6,13 @@ from decimal import Decimal
 import logging
 from colorama import Fore, Back, Style 
 
-from app.calculator import Calculator, calculator, display_help, display_history
+from app.calculator import Calculator
 from app.exceptions import OperationError, ValidationError
 from app.history import AutoSaveObserver, LoggingObserver
 from app.operations import OperationFactory
 from app.logger import Logger
 from app.input_validators import InputValidator
+
 
 def calculator_repl(calc):
     """
